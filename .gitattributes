@@ -1,0 +1,18 @@
+# Normalize line endings on commit: LF in the repo, native in working tree.
+* text=auto eol=lf
+
+# Windows batch files must stay CRLF to run.
+*.bat  text eol=crlf
+*.cmd  text eol=crlf
+
+# POSIX shell scripts must stay LF even on Windows checkouts.
+*.sh      text eol=lf
+gradlew   text eol=lf
+
+# Binary assets — never diff, never normalise.
+*.jar  binary
+*.png  binary
+*.jpg  binary
+*.ico  binary
+*.zip  binary
+*.gz   binary

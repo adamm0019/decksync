@@ -1,0 +1,35 @@
+# Gradle
+.gradle/
+build/
+!gradle-wrapper.jar
+!**/gradle/wrapper/gradle-wrapper.jar
+
+# Java
+*.class
+hs_err_pid*.log
+replay_pid*.log
+
+# IDEs
+.idea/
+*.iml
+*.ipr
+*.iws
+.vscode/
+.project
+.classpath
+.settings/
+out/
+bin/
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Logs and local env
+*.log
+.env
+.env.local
+
+# Claude Code local project config — per-user, never shared
+.claude/
