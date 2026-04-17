@@ -9,6 +9,7 @@ import net.ltgt.gradle.errorprone.errorprone
 //   Google Java Format 1.24.0    — github.com/google/google-java-format
 //   ErrorProne plugin 4.1.0      — Gradle Plugin Portal: net.ltgt.errorprone
 //   ErrorProne core 2.31.0       — Maven Central: com.google.errorprone
+//   ArchUnit 1.3.0               — Maven Central: com.tngtech.archunit (test only)
 // JUnit 5, AssertJ, Mockito, Jackson, SnakeYAML versions come from the
 // Spring Boot BOM via the dependency-management plugin — don't pin directly.
 plugins {
@@ -52,6 +53,7 @@ val integrationTestRuntimeOnly: Configuration by configurations.getting {
 
 val picocliVersion = "4.7.6"
 val wiremockVersion = "3.9.1"
+val archunitVersion = "1.3.0"
 
 dependencies {
     implementation("org.springframework.boot:spring-boot-starter")
@@ -61,6 +63,7 @@ dependencies {
 
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testImplementation("org.wiremock:wiremock:$wiremockVersion")
+    testImplementation("com.tngtech.archunit:archunit-junit5:$archunitVersion")
 
     errorprone("com.google.errorprone:error_prone_core:2.31.0")
 }
