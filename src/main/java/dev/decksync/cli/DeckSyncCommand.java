@@ -15,6 +15,7 @@ import picocli.CommandLine.Spec;
       ListGamesCommand.class,
       ScanCommand.class,
       ServeCommand.class,
+      SetupCommand.class,
       StatusCommand.class,
       SyncCommand.class
     })
