@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.CheckBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ListView?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.control.Spinner?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
+<VBox xmlns="http://javafx.com/javafx/21"
+      xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="dev.decksync.gui.controller.FirstRunController"
+      stylesheets="@../css/app.css"
+      styleClass="wizard-sheet"
+      prefWidth="640.0"
+      prefHeight="560.0">
+
+    <HBox styleClass="wizard-header">
+        <Label fx:id="stepIndicatorLabel" styleClass="wizard-step-indicator"/>
+        <Region HBox.hgrow="ALWAYS"/>
+        <Label fx:id="stepTitleLabel" styleClass="wizard-step-title"/>
+    </HBox>
+
+    <StackPane fx:id="stepHost" VBox.vgrow="ALWAYS" styleClass="wizard-step-host">
+
+        <VBox fx:id="welcomeStep" styleClass="wizard-step wizard-welcome">
+            <Label text="Welcome to DeckSync" styleClass="wizard-title"/>
+            <Label text="Keep your save files in sync between any two machines on your LAN — no cloud, no account." styleClass="wizard-lead"/>
+            <Label text="This wizard writes ~/.decksync/config.yml with your peer URL, games to sync, and backup settings." styleClass="wizard-body"/>
+        </VBox>
+
+        <VBox fx:id="peerStep" styleClass="wizard-step" visible="false" managed="false">
+            <Label text="Where's the other machine?" styleClass="wizard-title"/>
+            <Label text="DeckSync syncs with one peer over HTTP. Enter its URL or LAN IP — port defaults to 47824." styleClass="wizard-body"/>
+            <Label text="Peer URL" styleClass="wizard-field-label"/>
+            <TextField fx:id="peerUrlField" promptText="http://192.168.1.11:47824" styleClass="wizard-input"/>
+            <Label fx:id="peerErrorLabel" styleClass="wizard-error"/>
+        </VBox>
+
+        <VBox fx:id="gamesStep" styleClass="wizard-step" visible="false" managed="false">
+            <Label text="Which games?" styleClass="wizard-title"/>
+            <Label fx:id="gamesLead" styleClass="wizard-body"/>
+            <CheckBox fx:id="syncAllCheck" text="Sync every game both peers have installed" styleClass="wizard-check"/>
+            <Label text="Or pick specific games:" styleClass="wizard-field-label"/>
+            <ScrollPane fitToWidth="true" styleClass="plain-scroll" VBox.vgrow="ALWAYS">
+                <VBox fx:id="gamesBox" styleClass="wizard-games"/>
+            </ScrollPane>
+        </VBox>
+
+        <VBox fx:id="behaviourStep" styleClass="wizard-step" visible="false" managed="false">
+            <Label text="Backups and port" styleClass="wizard-title"/>
+            <Label text="Every overwrite is snapshotted so you can roll back from History. Keep as many as you need — snapshots are cheap, saves are tiny." styleClass="wizard-body"/>
+            <Label text="Snapshots to keep per game" styleClass="wizard-field-label"/>
+            <Spinner fx:id="retentionSpinner" editable="true" styleClass="wizard-input" prefWidth="120"/>
+            <Label text="TCP port this machine listens on" styleClass="wizard-field-label"/>
+            <Spinner fx:id="portSpinner" editable="true" styleClass="wizard-input" prefWidth="120"/>
+        </VBox>
+
+        <VBox fx:id="doneStep" styleClass="wizard-step wizard-done" visible="false" managed="false">
+            <Label text="All set" styleClass="wizard-title"/>
+            <Label fx:id="doneSummary" styleClass="wizard-body"/>
+            <Label text="Restart DeckSync to pick up the new config." styleClass="wizard-hint"/>
+        </VBox>
+
+    </StackPane>
+
+    <HBox styleClass="wizard-footer">
+        <Button fx:id="backButton" text="Back" styleClass="button-ghost" onAction="#onBack"/>
+        <Region HBox.hgrow="ALWAYS"/>
+        <Button fx:id="skipButton" text="Skip for now" styleClass="button-ghost" onAction="#onSkip"/>
+        <Button fx:id="nextButton" text="Next" styleClass="button-primary" onAction="#onNext"/>
+    </HBox>
+</VBox>

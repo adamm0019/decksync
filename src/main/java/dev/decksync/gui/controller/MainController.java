@@ -1,12 +1,14 @@
 package dev.decksync.gui.controller;
 
 import dev.decksync.application.DeckSyncConfig;
+import dev.decksync.application.Environment;
 import dev.decksync.application.GameCatalog;
 import dev.decksync.application.PeerReachability;
 import dev.decksync.application.PeerStatus;
 import dev.decksync.domain.GameId;
 import java.io.IOException;
 import java.io.UncheckedIOException;
+import java.nio.file.Files;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
@@ -34,6 +36,7 @@ public class MainController {
   private final PeerReachability reachability;
   private final GameCatalog catalog;
   private final DeckSyncConfig config;
+  private final Environment env;
 
   @FXML private StackPane destinationHost;
   @FXML private HBox peerPill;
@@ -46,11 +49,13 @@ public class MainController {
       ApplicationContext context,
       PeerReachability reachability,
       GameCatalog catalog,
-      DeckSyncConfig config) {
+      DeckSyncConfig config,
+      Environment env) {
     this.context = context;
     this.reachability = reachability;
     this.catalog = catalog;
     this.config = config;
+    this.env = env;
   }
 
   @FXML
@@ -58,6 +63,18 @@ public class MainController {
     setPeerPill(PillState.UNKNOWN, "Peer: checking…");
     onShowLibrary();
     Thread.ofVirtual().name("peer-pill-probe").start(this::refreshPeerPill);
+    maybeShowFirstRun();
+  }
+
+  private void maybeShowFirstRun() {
+    if (Files.isRegularFile(env.home().resolve(".decksync/config.yml"))) {
+      return;
+    }
+    Platform.runLater(
+        () -> {
+          Window owner = peerPill.getScene() == null ? null : peerPill.getScene().getWindow();
+          FirstRunController.showModal(context, owner);
+        });
   }
 
   private void refreshPeerPill() {

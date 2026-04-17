@@ -641,6 +641,118 @@
     -fx-wrap-text: true;
 }
 
+/* ---------- first-run wizard ---------- */
+
+.wizard-sheet {
+    -fx-background-color: -color-bg-app;
+}
+
+.wizard-header {
+    -fx-padding: 16 24 12 24;
+    -fx-alignment: center-left;
+    -fx-border-color: -color-divider;
+    -fx-border-width: 0 0 1 0;
+}
+
+.wizard-step-indicator {
+    -fx-font-size: 12px;
+    -fx-text-fill: -color-text-tertiary;
+    -fx-font-weight: bold;
+}
+
+.wizard-step-title {
+    -fx-font-size: 12px;
+    -fx-text-fill: -color-text-secondary;
+}
+
+.wizard-step-host {
+    -fx-padding: 24 24 8 24;
+}
+
+.wizard-step {
+    -fx-spacing: 10;
+}
+
+.wizard-title {
+    -fx-font-size: 22px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -color-text-primary;
+    -fx-padding: 0 0 4 0;
+}
+
+.wizard-lead {
+    -fx-font-size: 14px;
+    -fx-text-fill: -color-text-primary;
+    -fx-wrap-text: true;
+}
+
+.wizard-body {
+    -fx-font-size: 13px;
+    -fx-text-fill: -color-text-secondary;
+    -fx-wrap-text: true;
+}
+
+.wizard-hint {
+    -fx-font-size: 12px;
+    -fx-text-fill: -color-text-tertiary;
+    -fx-padding: 8 0 0 0;
+}
+
+.wizard-field-label {
+    -fx-font-size: 11px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -color-text-tertiary;
+    -fx-padding: 8 0 2 0;
+}
+
+.wizard-input {
+    -fx-background-color: -color-bg-card;
+    -fx-background-radius: 6;
+    -fx-border-color: -color-border;
+    -fx-border-radius: 6;
+    -fx-border-width: 1;
+    -fx-text-fill: -color-text-primary;
+    -fx-font-size: 14px;
+    -fx-padding: 6 10 6 10;
+}
+
+.wizard-input:focused {
+    -fx-border-color: -color-accent;
+}
+
+.wizard-error {
+    -fx-font-size: 12px;
+    -fx-text-fill: -color-bad;
+    -fx-padding: 4 0 0 0;
+}
+
+.wizard-check {
+    -fx-text-fill: -color-text-primary;
+    -fx-font-size: 13px;
+}
+
+.wizard-games {
+    -fx-spacing: 4;
+    -fx-padding: 4 0 16 2;
+}
+
+.wizard-game-check {
+    -fx-text-fill: -color-text-primary;
+    -fx-font-size: 13px;
+}
+
+.wizard-footer {
+    -fx-padding: 12 24 16 24;
+    -fx-spacing: 8;
+    -fx-alignment: center-left;
+    -fx-border-color: -color-divider;
+    -fx-border-width: 1 0 0 0;
+}
+
+.wizard-done {
+    -fx-alignment: center-left;
+}
+
 /* ---------- log drawer (placeholder — wired in M7i) ---------- */
 
 .log-drawer-handle {
