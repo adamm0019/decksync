@@ -18,6 +18,10 @@ plugins {
     id("io.spring.dependency-management") version "1.1.7"
     id("com.diffplug.spotless") version "7.0.2"
     id("net.ltgt.errorprone") version "4.1.0"
+    // JavaFX plugin resolves per-OS classifier artifacts (mac/win/linux) automatically.
+    // 0.1.0 is the current release; pinned because upstream ships breaking Gradle API
+    // changes between minor versions.
+    id("org.openjfx.javafxplugin") version "0.1.0"
 }
 
 group = "dev.decksync"
@@ -54,6 +58,11 @@ val integrationTestRuntimeOnly: Configuration by configurations.getting {
 val picocliVersion = "4.7.6"
 val wiremockVersion = "3.9.1"
 val archunitVersion = "1.3.0"
+
+javafx {
+    version = "21.0.5"
+    modules = listOf("javafx.controls", "javafx.fxml")
+}
 
 dependencies {
     implementation("org.springframework.boot:spring-boot-starter")

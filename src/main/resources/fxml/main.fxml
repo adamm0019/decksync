@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.layout.VBox?>
+<VBox xmlns="http://javafx.com/javafx/21"
+      xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="dev.decksync.gui.controller.MainController"
+      spacing="8.0"
+      prefWidth="640.0"
+      prefHeight="400.0">
+    <padding>
+        <Insets top="16.0" right="16.0" bottom="16.0" left="16.0"/>
+    </padding>
+    <Label text="DeckSync" style="-fx-font-size: 20px; -fx-font-weight: bold;"/>
+    <Label fx:id="statusLabel" text="GUI skeleton ready."/>
+</VBox>

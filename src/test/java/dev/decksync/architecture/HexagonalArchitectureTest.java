@@ -28,6 +28,8 @@ class HexagonalArchitectureTest {
           .definedBy("dev.decksync.web..")
           .optionalLayer("cli")
           .definedBy("dev.decksync.cli..")
+          .optionalLayer("gui")
+          .definedBy("dev.decksync.gui..")
           .optionalLayer("config")
           .definedBy("dev.decksync.config..")
           .whereLayer("config")
@@ -38,8 +40,10 @@ class HexagonalArchitectureTest {
           .mayOnlyBeAccessedByLayers("config")
           .whereLayer("cli")
           .mayOnlyBeAccessedByLayers("config")
+          .whereLayer("gui")
+          .mayOnlyBeAccessedByLayers("cli", "config")
           .whereLayer("application")
-          .mayOnlyBeAccessedByLayers("infrastructure", "web", "cli", "config");
+          .mayOnlyBeAccessedByLayers("infrastructure", "web", "cli", "gui", "config");
 
   @ArchTest
   static final ArchRule domainIsFrameworkFree =
@@ -53,9 +57,11 @@ class HexagonalArchitectureTest {
               "picocli..",
               "com.fasterxml.jackson..",
               "org.yaml..",
+              "javafx..",
               "dev.decksync.application..",
               "dev.decksync.infrastructure..",
               "dev.decksync.web..",
               "dev.decksync.cli..",
+              "dev.decksync.gui..",
               "dev.decksync.config..");
 }

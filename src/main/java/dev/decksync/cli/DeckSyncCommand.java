@@ -12,6 +12,7 @@ import picocli.CommandLine.Spec;
     version = "decksync 0.1.0-SNAPSHOT",
     description = "LAN peer-to-peer game save sync for Windows and SteamOS.",
     subcommands = {
+      GuiCommand.class,
       ListGamesCommand.class,
       ScanCommand.class,
       ServeCommand.class,
