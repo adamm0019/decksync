@@ -1,0 +1,8 @@
+server:
+  # Phase 1 daemon port — deliberately fixed so peer config can reference it by
+  # name rather than discovery. Revisit when mDNS lands in Phase 2.
+  port: 47824
+  # Bind to all interfaces so peers on the LAN can reach us. There is no TLS or
+  # auth in Phase 1; the `serve` subcommand logs a loud warning about this at
+  # startup. Do not expose this port beyond a trusted LAN.
+  address: 0.0.0.0
