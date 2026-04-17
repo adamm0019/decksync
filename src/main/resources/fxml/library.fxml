@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.layout.VBox?>
+<VBox xmlns="http://javafx.com/javafx/21"
+      xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="dev.decksync.gui.controller.LibraryController"
+      styleClass="destination">
+
+    <Label text="LIBRARY" styleClass="section-heading"/>
+
+    <!-- Empty state — replaced by the card grid in M7c. -->
+    <VBox styleClass="empty-state">
+        <Label text="No games yet" styleClass="empty-title"/>
+        <Label text="Run 'decksync setup' to add your peer and pick games." styleClass="empty-subtitle"/>
+    </VBox>
+</VBox>

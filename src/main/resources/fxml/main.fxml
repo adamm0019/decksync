@@ -1,16 +1,48 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
 <?import javafx.scene.control.Label?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.layout.VBox?>
-<VBox xmlns="http://javafx.com/javafx/21"
-      xmlns:fx="http://javafx.com/fxml/1"
-      fx:controller="dev.decksync.gui.controller.MainController"
-      spacing="8.0"
-      prefWidth="640.0"
-      prefHeight="400.0">
-    <padding>
-        <Insets top="16.0" right="16.0" bottom="16.0" left="16.0"/>
-    </padding>
-    <Label text="DeckSync" style="-fx-font-size: 20px; -fx-font-weight: bold;"/>
-    <Label fx:id="statusLabel" text="GUI skeleton ready."/>
-</VBox>
+<BorderPane xmlns="http://javafx.com/javafx/21"
+            xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="dev.decksync.gui.controller.MainController"
+            stylesheets="@../css/app.css"
+            prefWidth="1100.0"
+            prefHeight="720.0">
+
+    <top>
+        <VBox>
+            <!-- Top bar: title · peer pill · sync-all · settings -->
+            <HBox styleClass="top-bar">
+                <Label text="DeckSync" styleClass="app-title"/>
+                <Region HBox.hgrow="ALWAYS"/>
+                <HBox fx:id="peerPill" styleClass="peer-pill">
+                    <Region fx:id="peerDot" styleClass="peer-dot"/>
+                    <Label fx:id="peerLabel" text="Peer: not configured" styleClass="peer-label"/>
+                </HBox>
+                <Region HBox.hgrow="ALWAYS"/>
+                <Button fx:id="syncAllButton" text="Sync all" styleClass="button-primary" onAction="#onSyncAll"/>
+                <Button fx:id="settingsIconButton" text="⚙" styleClass="icon-button" onAction="#onOpenSettings"/>
+            </HBox>
+
+            <!-- Nav: Library / History / Settings -->
+            <HBox styleClass="nav-row">
+                <Button fx:id="libraryNavButton" text="Library" styleClass="nav-button" onAction="#onShowLibrary"/>
+                <Button fx:id="historyNavButton" text="History" styleClass="nav-button" onAction="#onShowHistory"/>
+                <Button fx:id="settingsNavButton" text="Settings" styleClass="nav-button" onAction="#onShowSettings"/>
+            </HBox>
+        </VBox>
+    </top>
+
+    <!-- Destinations are loaded into this pane by MainController. -->
+    <center>
+        <StackPane fx:id="destinationHost"/>
+    </center>
+
+    <bottom>
+        <Label text="show log" styleClass="log-drawer-handle" maxWidth="Infinity"/>
+    </bottom>
+</BorderPane>

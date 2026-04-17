@@ -1,0 +1,205 @@
+/*
+ * DeckSync design tokens + base theme (dark).
+ *
+ * JavaFX CSS doesn't support `var(--x)` the way web CSS does, but "looked-up
+ * colors" on .root behave identically: children resolve the named reference
+ * at paint time. Define tokens here, reference them everywhere else.
+ */
+
+.root {
+    /* Surfaces — three elevation steps, no more. */
+    -color-bg-app:       #0E1116;
+    -color-bg-card:      #151A22;
+    -color-bg-elevated:  #1C2330;
+
+    /* Text — never pure white. */
+    -color-text-primary:   #E8ECF2;
+    -color-text-secondary: #9AA3B2;
+    -color-text-tertiary:  #5E6676;
+
+    /* Accent used sparingly for primary action + selection. */
+    -color-accent:        #5B8DEF;
+    -color-accent-hover:  #7AA3F3;
+    -color-accent-press:  #4478E0;
+
+    /* Semantic. Desaturated so they coexist without shouting. */
+    -color-ok:    #4ADE80;
+    -color-warn:  #FBBF24;
+    -color-bad:   #F87171;
+    -color-info:  #60A5FA;
+
+    /* Structure. */
+    -color-border:  #262D3A;
+    -color-divider: #1F2632;
+
+    -fx-background-color: -color-bg-app;
+    -fx-font-family: "Segoe UI Variable", "Segoe UI", "Inter", "Noto Sans", "Helvetica Neue", sans-serif;
+    -fx-font-size: 15px;
+    -fx-text-fill: -color-text-primary;
+}
+
+/* ---------- top bar ---------- */
+
+.top-bar {
+    -fx-background-color: -color-bg-card;
+    -fx-border-color: -color-border;
+    -fx-border-width: 0 0 1 0;
+    -fx-padding: 12 20 12 20;
+    -fx-spacing: 16;
+    -fx-alignment: center-left;
+}
+
+.app-title {
+    -fx-font-size: 17px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -color-text-primary;
+}
+
+/* Peer pill — the single most important pixel in the app. */
+.peer-pill {
+    -fx-background-color: -color-bg-elevated;
+    -fx-background-radius: 999;
+    -fx-border-radius: 999;
+    -fx-border-color: -color-border;
+    -fx-border-width: 1;
+    -fx-padding: 6 14 6 14;
+    -fx-spacing: 8;
+    -fx-alignment: center-left;
+}
+
+.peer-pill .peer-dot {
+    -fx-min-width: 8;
+    -fx-min-height: 8;
+    -fx-max-width: 8;
+    -fx-max-height: 8;
+    -fx-background-radius: 999;
+    -fx-background-color: -color-text-tertiary;
+}
+
+.peer-pill.ok .peer-dot { -fx-background-color: -color-ok; }
+.peer-pill.warn .peer-dot { -fx-background-color: -color-warn; }
+.peer-pill.bad .peer-dot { -fx-background-color: -color-bad; }
+
+.peer-pill .peer-label {
+    -fx-font-size: 13px;
+    -fx-text-fill: -color-text-secondary;
+}
+
+/* ---------- nav ---------- */
+
+.nav-row {
+    -fx-background-color: -color-bg-app;
+    -fx-padding: 0 20 0 20;
+    -fx-border-color: -color-border;
+    -fx-border-width: 0 0 1 0;
+    -fx-spacing: 4;
+}
+
+.nav-button {
+    -fx-background-color: transparent;
+    -fx-text-fill: -color-text-secondary;
+    -fx-font-size: 14px;
+    -fx-font-weight: normal;
+    -fx-padding: 10 14 10 14;
+    -fx-background-radius: 0;
+    -fx-border-color: transparent;
+    -fx-border-width: 0 0 2 0;
+    -fx-cursor: hand;
+}
+
+.nav-button:hover {
+    -fx-text-fill: -color-text-primary;
+}
+
+.nav-button.active {
+    -fx-text-fill: -color-text-primary;
+    -fx-border-color: -color-accent;
+}
+
+/* ---------- buttons ---------- */
+
+.button-primary {
+    -fx-background-color: -color-accent;
+    -fx-text-fill: white;
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+    -fx-background-radius: 6;
+    -fx-border-radius: 6;
+    -fx-padding: 8 16 8 16;
+    -fx-cursor: hand;
+}
+
+.button-primary:hover { -fx-background-color: -color-accent-hover; }
+.button-primary:pressed { -fx-background-color: -color-accent-press; }
+
+.button-ghost {
+    -fx-background-color: transparent;
+    -fx-text-fill: -color-text-primary;
+    -fx-font-size: 14px;
+    -fx-background-radius: 6;
+    -fx-border-radius: 6;
+    -fx-border-color: -color-border;
+    -fx-border-width: 1;
+    -fx-padding: 7 14 7 14;
+    -fx-cursor: hand;
+}
+
+.button-ghost:hover { -fx-background-color: -color-bg-card; }
+
+.icon-button {
+    -fx-background-color: transparent;
+    -fx-text-fill: -color-text-secondary;
+    -fx-font-size: 16px;
+    -fx-padding: 6 8 6 8;
+    -fx-cursor: hand;
+    -fx-background-radius: 6;
+}
+
+.icon-button:hover {
+    -fx-background-color: -color-bg-card;
+    -fx-text-fill: -color-text-primary;
+}
+
+/* ---------- content / destinations ---------- */
+
+.destination {
+    -fx-padding: 24 24 24 24;
+    -fx-background-color: -color-bg-app;
+}
+
+.section-heading {
+    -fx-font-size: 13px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -color-text-tertiary;
+    -fx-padding: 0 0 12 2;
+}
+
+.empty-state {
+    -fx-alignment: center;
+    -fx-spacing: 10;
+    -fx-padding: 80 20 80 20;
+}
+
+.empty-state .empty-title {
+    -fx-font-size: 22px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -color-text-primary;
+}
+
+.empty-state .empty-subtitle {
+    -fx-font-size: 14px;
+    -fx-text-fill: -color-text-secondary;
+}
+
+/* ---------- log drawer (placeholder — wired in M7i) ---------- */
+
+.log-drawer-handle {
+    -fx-background-color: -color-bg-card;
+    -fx-border-color: -color-border;
+    -fx-border-width: 1 0 0 0;
+    -fx-text-fill: -color-text-tertiary;
+    -fx-font-size: 12px;
+    -fx-alignment: center;
+    -fx-padding: 6 0 6 0;
+    -fx-cursor: hand;
+}

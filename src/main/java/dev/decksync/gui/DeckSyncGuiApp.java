@@ -40,10 +40,7 @@ public class DeckSyncGuiApp extends Application {
     stage.show();
   }
 
-  @Override
-  public void stop() {
-    if (springContext != null) {
-      springContext.close();
-    }
-  }
+  // Deliberately no stop() override — Spring Boot's main() closes the application context via
+  // SpringApplication.exit() after the CLI Runnable returns. Closing it here as well races with
+  // that path and throws IllegalStateException.
 }

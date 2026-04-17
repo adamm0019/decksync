@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.layout.VBox?>
+<VBox xmlns="http://javafx.com/javafx/21"
+      xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="dev.decksync.gui.controller.HistoryController"
+      styleClass="destination">
+
+    <Label text="HISTORY" styleClass="section-heading"/>
+
+    <VBox styleClass="empty-state">
+        <Label text="No syncs yet" styleClass="empty-title"/>
+        <Label text="Every sync is logged here with one-click rollback." styleClass="empty-subtitle"/>
+    </VBox>
+</VBox>
