@@ -24,13 +24,13 @@ class ListGamesCommandTest {
   }
 
   @Test
-  void printsSingleSteamAppIdRow() {
+  void printsSingleSteamAppIdRow(@TempDir Path tmp) {
+    Path savePath = tmp.resolve("EldenRing");
     Map<GameId, AbsolutePath> games = new LinkedHashMap<>();
-    games.put(
-        new GameId.SteamAppId(1245620L), new AbsolutePath(Path.of("C:\\Users\\a\\EldenRing")));
+    games.put(new GameId.SteamAppId(1245620L), new AbsolutePath(savePath));
     String output = runWith(games);
     assertThat(output).contains("steam:1245620");
-    assertThat(output).contains("C:\\Users\\a\\EldenRing");
+    assertThat(output).contains(savePath.toString());
   }
 
   @Test
