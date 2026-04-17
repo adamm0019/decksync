@@ -1,14 +1,22 @@
+import net.ltgt.gradle.errorprone.errorprone
+
 // Version pins — sourced from each project's official channel at build time.
 //   Spring Boot 3.4.1            — spring.io (stable, released 2024-12-19)
 //   Spring Dep Mgmt plugin 1.1.7 — plugins.gradle.org
 //   Picocli 4.7.6                — Maven Central: info.picocli
 //   WireMock 3.9.1               — Maven Central: org.wiremock (not in Boot BOM)
+//   Spotless plugin 7.0.2        — Gradle Plugin Portal: com.diffplug.spotless
+//   Google Java Format 1.24.0    — github.com/google/google-java-format
+//   ErrorProne plugin 4.1.0      — Gradle Plugin Portal: net.ltgt.errorprone
+//   ErrorProne core 2.31.0       — Maven Central: com.google.errorprone
 // JUnit 5, AssertJ, Mockito, Jackson, SnakeYAML versions come from the
 // Spring Boot BOM via the dependency-management plugin — don't pin directly.
 plugins {
     java
     id("org.springframework.boot") version "3.4.1"
     id("io.spring.dependency-management") version "1.1.7"
+    id("com.diffplug.spotless") version "7.0.2"
+    id("net.ltgt.errorprone") version "4.1.0"
 }
 
 group = "dev.decksync"
@@ -53,12 +61,32 @@ dependencies {
 
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testImplementation("org.wiremock:wiremock:$wiremockVersion")
+
+    errorprone("com.google.errorprone:error_prone_core:2.31.0")
+}
+
+spotless {
+    java {
+        target("src/**/*.java")
+        googleJavaFormat("1.24.0")
+        removeUnusedImports()
+        trimTrailingWhitespace()
+        endWithNewline()
+    }
+    kotlinGradle {
+        target("*.gradle.kts")
+        trimTrailingWhitespace()
+        endWithNewline()
+    }
 }
 
 tasks.withType<JavaCompile>().configureEach {
     options.encoding = "UTF-8"
     options.release = 21
     options.compilerArgs.addAll(listOf("-Xlint:all", "-Werror"))
+    options.errorprone {
+        disableWarningsInGeneratedCode.set(true)
+    }
 }
 
 tasks.withType<Test>().configureEach {
