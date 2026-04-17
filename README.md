@@ -28,6 +28,13 @@ Phase 1 packaging targets:
 
 Both bundle a JRE so the target machine does not need Java installed. Install the MSI on Windows; drop the AppImage anywhere writable on SteamOS (e.g. `~/Applications/`) and `chmod +x` it.
 
+**Prerequisites** for building the installers (not for running them):
+
+- `packageMsi` — Windows host + [WiX Toolset 3.x](https://wixtoolset.org/) on `PATH`. jpackage shells out to `light.exe` / `candle.exe` for MSI generation.
+- `packageAppImage` — Linux host + [`appimagetool`](https://github.com/AppImage/AppImageKit/releases) on `PATH`.
+
+Running either task on the wrong OS is a no-op with a warning rather than a hard failure.
+
 ## Quickstart
 
 You need **two machines on the same LAN**. Pick one machine's LAN IP as the peer URL on the *other* machine and vice versa. Port `47824/tcp` is the default.

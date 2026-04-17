@@ -147,3 +147,58 @@ val downloadLudusaviManifest =
     }
 
 sourceSets.main.get().resources.srcDir(downloadLudusaviManifest.map { ludusaviManifestDir })
+
+// Windows MSI packaging via jpackage. The Spring Boot fat jar already has the right
+// Main-Class (JarLauncher) in its manifest, so jpackage treats it like any other
+// runnable jar and jlinks a bundled JRE alongside it. `--add-modules ALL-MODULE-PATH`
+// keeps us from chasing module-detection bugs — image size is secondary for a LAN tool.
+// Requires WiX 3.x on PATH (jpackage shells out to it for MSI generation).
+tasks.register<Exec>("packageMsi") {
+    description = "Builds a Windows MSI installer with a bundled JRE via jpackage. Requires WiX 3.x on PATH."
+    group = "distribution"
+    dependsOn(tasks.bootJar)
+
+    val bootJarFile = tasks.bootJar.flatMap { it.archiveFile }
+    val inputDir = layout.buildDirectory.dir("jpackage-input")
+    val outputDir = layout.buildDirectory.dir("distributions")
+    val appVersion = project.version.toString().removeSuffix("-SNAPSHOT")
+
+    inputs.file(bootJarFile)
+    outputs.dir(outputDir)
+
+    onlyIf {
+        val os = System.getProperty("os.name").lowercase()
+        val windows = os.contains("win")
+        if (!windows) logger.warn("Skipping packageMsi — requires Windows (current os.name: $os).")
+        windows
+    }
+
+    doFirst {
+        val inDir = inputDir.get().asFile
+        inDir.deleteRecursively()
+        inDir.mkdirs()
+        val jar = bootJarFile.get().asFile
+        jar.copyTo(inDir.resolve(jar.name), overwrite = true)
+        outputDir.get().asFile.mkdirs()
+
+        commandLine(
+            "jpackage",
+            "--type", "msi",
+            "--name", "DeckSync",
+            "--app-version", appVersion,
+            "--vendor", "DeckSync",
+            "--description", "LAN peer-to-peer game save sync.",
+            "--input", inDir.absolutePath,
+            "--main-jar", jar.name,
+            "--dest", outputDir.get().asFile.absolutePath,
+            "--win-console",
+            "--win-menu",
+            "--win-menu-group", "DeckSync",
+            "--win-shortcut",
+            // Stable UUID so successive MSI versions upgrade in place rather than
+            // installing side-by-side. Do NOT change once a release has shipped.
+            "--win-upgrade-uuid", "6f3a9b4e-5c2d-4f78-8e91-a5b8d7c9e0f1",
+            "--add-modules", "ALL-MODULE-PATH",
+        )
+    }
+}
