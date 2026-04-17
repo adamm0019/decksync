@@ -202,3 +202,107 @@ tasks.register<Exec>("packageMsi") {
         )
     }
 }
+
+// Linux AppImage packaging. Unlike jpackage's native bundlers, AppImage isn't a
+// first-class jpackage target — we assemble the AppDir ourselves and hand it to
+// appimagetool. The runtime is jlinked from the host JDK, so this must run on a
+// Linux host (a Windows jlink output would be Windows-specific binaries that
+// wouldn't work on SteamOS).
+tasks.register("packageAppImage") {
+    description = "Builds a Linux AppImage with a bundled JRE via appimagetool. Requires appimagetool on PATH."
+    group = "distribution"
+    dependsOn(tasks.bootJar)
+
+    val bootJarFile = tasks.bootJar.flatMap { it.archiveFile }
+    val stagingDir = layout.buildDirectory.dir("appimage")
+    val outputDir = layout.buildDirectory.dir("distributions")
+    val appVersion = project.version.toString().removeSuffix("-SNAPSHOT")
+
+    inputs.file(bootJarFile)
+    outputs.dir(outputDir)
+
+    onlyIf {
+        val os = System.getProperty("os.name").lowercase()
+        val linux = os.contains("linux")
+        if (!linux) logger.warn("Skipping packageAppImage — requires Linux (current os.name: $os).")
+        linux
+    }
+
+    doLast {
+        val staging = stagingDir.get().asFile
+        staging.deleteRecursively()
+        val appDir = staging.resolve("DeckSync.AppDir")
+        val binDir = appDir.resolve("usr/bin").apply { mkdirs() }
+        val libDir = appDir.resolve("usr/lib").apply { mkdirs() }
+        val runtimeDir = appDir.resolve("usr/runtime")
+
+        val jar = bootJarFile.get().asFile
+        jar.copyTo(libDir.resolve("decksync.jar"), overwrite = true)
+
+        val javaHome = System.getProperty("java.home")
+        val jlink = file("$javaHome/bin/jlink")
+        exec {
+            commandLine(
+                jlink.absolutePath,
+                "--add-modules", "ALL-MODULE-PATH",
+                "--strip-debug",
+                "--no-header-files",
+                "--no-man-pages",
+                "--compress", "2",
+                "--output", runtimeDir.absolutePath,
+            )
+        }
+
+        // AppRun is the entry-point the AppImage mounts and executes. Resolve the
+        // real path so relative lookups work regardless of where the AppImage is run.
+        appDir.resolve("AppRun").apply {
+            writeText(
+                """
+                #!/bin/sh
+                HERE="${'$'}(dirname "${'$'}(readlink -f "${'$'}0")")"
+                exec "${'$'}HERE/usr/runtime/bin/java" -jar "${'$'}HERE/usr/lib/decksync.jar" "${'$'}@"
+                """.trimIndent() + "\n",
+            )
+            setExecutable(true, false)
+        }
+        // Thin wrapper so `decksync` also works if the AppImage is extracted and
+        // usr/bin is added to PATH — matches what installers usually expose.
+        binDir.resolve("decksync").apply {
+            writeText(
+                """
+                #!/bin/sh
+                exec "${'$'}(dirname "${'$'}0")/../runtime/bin/java" -jar "${'$'}(dirname "${'$'}0")/../lib/decksync.jar" "${'$'}@"
+                """.trimIndent() + "\n",
+            )
+            setExecutable(true, false)
+        }
+
+        appDir.resolve("decksync.desktop").writeText(
+            """
+            [Desktop Entry]
+            Name=DeckSync
+            Comment=LAN peer-to-peer game save sync
+            Exec=decksync
+            Icon=decksync
+            Type=Application
+            Categories=Utility;
+            Terminal=true
+            """.trimIndent() + "\n",
+        )
+
+        // Minimal SVG icon so appimagetool doesn't warn. Placeholder until we ship
+        // real branding — the colour is Steam-ish blue, the shape is a square.
+        appDir.resolve("decksync.svg").writeText(
+            "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 16 16\">" +
+                "<rect width=\"16\" height=\"16\" fill=\"#1b2838\"/>" +
+                "<rect x=\"3\" y=\"3\" width=\"10\" height=\"10\" fill=\"#66c0f4\"/>" +
+                "</svg>\n",
+        )
+
+        outputDir.get().asFile.mkdirs()
+        val outFile = outputDir.get().asFile.resolve("DeckSync-$appVersion-x86_64.AppImage")
+        exec {
+            commandLine("appimagetool", appDir.absolutePath, outFile.absolutePath)
+        }
+    }
+}
