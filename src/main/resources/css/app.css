@@ -411,6 +411,147 @@
     -fx-text-fill: -color-text-tertiary;
 }
 
+/* ---------- history ---------- */
+
+.section-subheading {
+    -fx-font-size: 11px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -color-text-tertiary;
+    -fx-padding: 4 0 8 2;
+}
+
+.history-content {
+    -fx-padding: 4 0 0 0;
+}
+
+.history-sidebar {
+    -fx-pref-width: 280;
+    -fx-min-width: 240;
+    -fx-spacing: 4;
+    -fx-padding: 0 4 0 0;
+}
+
+.history-games {
+    -fx-background-color: -color-bg-card;
+    -fx-background-radius: 6;
+    -fx-border-color: -color-border;
+    -fx-border-radius: 6;
+    -fx-border-width: 1;
+    -fx-padding: 4;
+}
+
+.history-games .list-cell {
+    -fx-background-color: transparent;
+    -fx-padding: 8 10 8 10;
+    -fx-background-radius: 4;
+}
+
+.history-games .list-cell:filled:hover {
+    -fx-background-color: -color-bg-elevated;
+}
+
+.history-games .list-cell:filled:selected {
+    -fx-background-color: -color-bg-elevated;
+    -fx-border-color: -color-accent;
+    -fx-border-width: 0 0 0 2;
+    -fx-padding: 8 10 8 8;
+}
+
+.history-game-cell {
+    -fx-spacing: 2;
+}
+
+.history-game-name {
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -color-text-primary;
+}
+
+.history-game-count {
+    -fx-font-size: 12px;
+    -fx-text-fill: -color-text-tertiary;
+}
+
+.history-detail {
+    -fx-spacing: 12;
+}
+
+.history-detail-header {
+    -fx-spacing: 2;
+    -fx-padding: 0 0 4 0;
+    -fx-border-color: -color-divider;
+    -fx-border-width: 0 0 1 0;
+}
+
+.history-detail-title {
+    -fx-font-size: 20px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -color-text-primary;
+}
+
+.history-detail-subtitle {
+    -fx-font-size: 12px;
+    -fx-text-fill: -color-text-secondary;
+}
+
+.history-detail-empty {
+    -fx-alignment: center;
+    -fx-spacing: 8;
+    -fx-padding: 80 20 80 20;
+}
+
+.snapshot-list {
+    -fx-spacing: 6;
+    -fx-padding: 4 2 16 2;
+}
+
+.snapshot-row {
+    -fx-background-color: -color-bg-card;
+    -fx-background-radius: 6;
+    -fx-border-color: -color-border;
+    -fx-border-radius: 6;
+    -fx-border-width: 1;
+    -fx-padding: 10 14 10 14;
+}
+
+.snapshot-row.latest {
+    -fx-border-color: -color-accent;
+}
+
+.snapshot-dot {
+    -fx-text-fill: -color-text-tertiary;
+    -fx-font-size: 14px;
+}
+
+.snapshot-row.latest .snapshot-dot {
+    -fx-text-fill: -color-accent;
+}
+
+.snapshot-relative {
+    -fx-font-size: 13px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -color-text-primary;
+}
+
+.snapshot-absolute {
+    -fx-font-size: 11px;
+    -fx-text-fill: -color-text-tertiary;
+}
+
+.snapshot-meta {
+    -fx-font-size: 12px;
+    -fx-text-fill: -color-text-secondary;
+}
+
+.snapshot-status {
+    -fx-font-size: 12px;
+    -fx-text-fill: -color-text-secondary;
+}
+
+.snapshot-status.failed {
+    -fx-text-fill: -color-bad;
+}
+
 /* ---------- log drawer (placeholder — wired in M7i) ---------- */
 
 .log-drawer-handle {

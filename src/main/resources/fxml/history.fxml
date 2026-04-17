@@ -1,14 +1,43 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ListView?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
 <?import javafx.scene.layout.VBox?>
 <VBox xmlns="http://javafx.com/javafx/21"
       xmlns:fx="http://javafx.com/fxml/1"
       fx:controller="dev.decksync.gui.controller.HistoryController"
       styleClass="destination">
 
-    <Label text="HISTORY" styleClass="section-heading"/>
+    <HBox alignment="CENTER_LEFT" spacing="12">
+        <Label text="HISTORY" styleClass="section-heading"/>
+        <Region HBox.hgrow="ALWAYS"/>
+        <Label fx:id="countLabel" styleClass="section-meta"/>
+    </HBox>
 
-    <VBox styleClass="empty-state">
+    <HBox fx:id="contentPane" spacing="16" VBox.vgrow="ALWAYS" styleClass="history-content">
+        <VBox styleClass="history-sidebar">
+            <Label text="GAMES" styleClass="section-subheading"/>
+            <ListView fx:id="gamesList" VBox.vgrow="ALWAYS" styleClass="history-games"/>
+        </VBox>
+
+        <VBox fx:id="detailPane" HBox.hgrow="ALWAYS" styleClass="history-detail">
+            <VBox fx:id="detailHeader" styleClass="history-detail-header">
+                <Label fx:id="detailTitle" styleClass="history-detail-title"/>
+                <Label fx:id="detailSubtitle" styleClass="history-detail-subtitle"/>
+            </VBox>
+            <ScrollPane fitToWidth="true" styleClass="plain-scroll" VBox.vgrow="ALWAYS">
+                <VBox fx:id="snapshotsList" styleClass="snapshot-list"/>
+            </ScrollPane>
+            <VBox fx:id="detailEmpty" styleClass="history-detail-empty">
+                <Label text="Pick a game" styleClass="empty-title"/>
+                <Label text="Select a game on the left to see its sync history and roll back." styleClass="empty-subtitle"/>
+            </VBox>
+        </VBox>
+    </HBox>
+
+    <VBox fx:id="emptyState" styleClass="empty-state">
         <Label text="No syncs yet" styleClass="empty-title"/>
         <Label text="Every sync is logged here with one-click rollback." styleClass="empty-subtitle"/>
     </VBox>

@@ -8,6 +8,7 @@ import dev.decksync.application.FileScanner;
 import dev.decksync.application.GameCatalog;
 import dev.decksync.application.PeerClient;
 import dev.decksync.application.PeerReachability;
+import dev.decksync.application.RestoreService;
 import dev.decksync.application.SyncPlanner;
 import dev.decksync.application.SyncService;
 import dev.decksync.infrastructure.net.HttpPeerClient;
@@ -66,5 +67,11 @@ public class SyncConfiguration {
       DeckSyncConfig config) {
     return new SyncService(
         peer, scanner, planner, backupService, fileApplier, catalog, config.retention());
+  }
+
+  @Bean
+  public RestoreService restoreService(
+      BackupService backupService, FileApplier fileApplier, GameCatalog catalog) {
+    return new RestoreService(backupService, fileApplier, catalog);
   }
 }

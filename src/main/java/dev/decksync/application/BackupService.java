@@ -83,6 +83,27 @@ public final class BackupService {
     }
   }
 
+  /** All snapshot timestamps for a game, newest first. Empty list when nothing's been backed up. */
+  public List<Instant> listSnapshots(GameId game) throws IOException {
+    Path gameHistory = gameHistory(game);
+    if (!Files.isDirectory(gameHistory)) {
+      return List.of();
+    }
+    try (Stream<Path> entries = Files.list(gameHistory)) {
+      return entries
+          .filter(Files::isDirectory)
+          .map(p -> parseTimestamp(p.getFileName().toString()))
+          .flatMap(Optional::stream)
+          .sorted(Comparator.reverseOrder())
+          .toList();
+    }
+  }
+
+  /** Directory on disk for a specific snapshot. Does not check that the directory exists. */
+  public Path snapshotDir(GameId game, Instant timestamp) {
+    return gameHistory(game).resolve(TIMESTAMP.format(timestamp));
+  }
+
   private static Optional<Instant> parseTimestamp(String dirName) {
     try {
       return Optional.of(Instant.from(TIMESTAMP.parse(dirName)));
