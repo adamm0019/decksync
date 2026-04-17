@@ -1,5 +1,6 @@
 package dev.decksync.infrastructure.steam;
 
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Objects;
@@ -26,7 +27,7 @@ public sealed interface VdfNode permits VdfNode.Value, VdfNode.Section {
   record Section(Map<String, VdfNode> entries) implements VdfNode {
     public Section {
       Objects.requireNonNull(entries, "entries");
-      entries = Map.copyOf(new LinkedHashMap<>(entries));
+      entries = Collections.unmodifiableMap(new LinkedHashMap<>(entries));
     }
 
     /** Convenience lookup for a direct child section. */
