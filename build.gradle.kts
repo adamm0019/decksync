@@ -148,6 +148,13 @@ val downloadLudusaviManifest =
 
 sourceSets.main.get().resources.srcDir(downloadLudusaviManifest.map { ludusaviManifestDir })
 
+// Pin jpackage + jlink to the Gradle Java 21 toolchain rather than whatever
+// ambient JDK is on PATH. Without this, a system-wide Java 17 jpackage silently
+// bundles a Java 17 runtime into the installer, and the Java 21 classes inside
+// bootJar fail at startup with UnsupportedClassVersionError.
+val javaToolchains = extensions.getByType<JavaToolchainService>()
+val launcherProvider = javaToolchains.launcherFor(java.toolchain)
+
 // Windows MSI packaging via jpackage. The Spring Boot fat jar already has the right
 // Main-Class (JarLauncher) in its manifest, so jpackage treats it like any other
 // runnable jar and jlinks a bundled JRE alongside it. `--add-modules ALL-MODULE-PATH`
@@ -181,8 +188,11 @@ tasks.register<Exec>("packageMsi") {
         jar.copyTo(inDir.resolve(jar.name), overwrite = true)
         outputDir.get().asFile.mkdirs()
 
+        val jdkHome = launcherProvider.get().metadata.installationPath.asFile
+        val jpackageExe = jdkHome.resolve("bin/jpackage.exe")
+
         commandLine(
-            "jpackage",
+            jpackageExe.absolutePath,
             "--type", "msi",
             "--name", "DeckSync",
             "--app-version", appVersion,
@@ -239,8 +249,8 @@ tasks.register("packageAppImage") {
         val jar = bootJarFile.get().asFile
         jar.copyTo(libDir.resolve("decksync.jar"), overwrite = true)
 
-        val javaHome = System.getProperty("java.home")
-        val jlink = file("$javaHome/bin/jlink")
+        val jdkHome = launcherProvider.get().metadata.installationPath.asFile
+        val jlink = jdkHome.resolve("bin/jlink")
         exec {
             commandLine(
                 jlink.absolutePath,
