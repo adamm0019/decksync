@@ -2,6 +2,7 @@ package dev.decksync.gui.controller;
 
 import dev.decksync.application.BackupService;
 import dev.decksync.application.DeckSyncConfig;
+import dev.decksync.application.GameArt;
 import dev.decksync.application.GameCatalog;
 import dev.decksync.application.ManifestEntry;
 import dev.decksync.application.ManifestIndex;
@@ -15,6 +16,7 @@ import dev.decksync.domain.SyncPlan;
 import dev.decksync.gui.util.RelativeTime;
 import dev.decksync.gui.view.CardStatus;
 import dev.decksync.gui.view.GameCardView;
+import java.nio.file.Path;
 import java.time.Clock;
 import java.time.Instant;
 import java.util.ArrayList;
@@ -52,6 +54,7 @@ public class LibraryController {
   private final SyncService syncService;
   private final BackupService backupService;
   private final ManifestIndex manifestIndex;
+  private final GameArt artFetcher;
   private final Clock clock;
   private final MainController mainController;
 
@@ -69,6 +72,7 @@ public class LibraryController {
       SyncService syncService,
       BackupService backupService,
       ManifestIndex manifestIndex,
+      GameArt artFetcher,
       Clock clock,
       MainController mainController) {
     this.catalog = catalog;
@@ -77,6 +81,7 @@ public class LibraryController {
     this.syncService = syncService;
     this.backupService = backupService;
     this.manifestIndex = manifestIndex;
+    this.artFetcher = artFetcher;
     this.clock = clock;
     this.mainController = mainController;
   }
@@ -114,10 +119,24 @@ public class LibraryController {
       card.setOnSyncNow(gameId -> mainController.openPreview(List.of(gameId)));
       cards.put(id, card);
       cardGrid.getChildren().add(card);
+      loadArt(id, card);
     }
     countLabel.setText(gameIds.size() + " game" + (gameIds.size() == 1 ? "" : "s"));
 
     Thread.ofVirtual().name("library-refresh").start(() -> refreshAll(installed));
+  }
+
+  private void loadArt(GameId id, GameCardView card) {
+    if (!(id instanceof GameId.SteamAppId steam)) {
+      return;
+    }
+    Thread.ofVirtual()
+        .name("library-art-" + steam.appid())
+        .start(
+            () -> {
+              Optional<Path> art = artFetcher.fetch(steam.appid());
+              art.ifPresent(path -> Platform.runLater(() -> card.setArt(path)));
+            });
   }
 
   private List<GameId> resolveGameList(Map<GameId, AbsolutePath> installed) {

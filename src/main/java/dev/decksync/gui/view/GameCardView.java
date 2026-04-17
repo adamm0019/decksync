@@ -1,11 +1,15 @@
 package dev.decksync.gui.view;
 
 import dev.decksync.domain.GameId;
+import java.nio.file.Path;
 import java.util.function.Consumer;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Region;
+import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 
 /**
@@ -18,12 +22,17 @@ import javafx.scene.layout.VBox;
  */
 public final class GameCardView extends VBox {
 
+  private static final double ART_WIDTH = 220;
+  private static final double ART_HEIGHT = 100;
+
   private final GameId gameId;
   private final Label statusGlyph = new Label();
   private final Label statusLabel = new Label();
   private final Label timeLabel = new Label();
   private final HBox statusLine;
   private final Button syncButton = new Button("Sync now");
+  private final StackPane artHost;
+  private final ImageView artView = new ImageView();
   private CardStatus currentStatus = CardStatus.LOADING;
   private Consumer<GameId> onSyncNow;
 
@@ -33,9 +42,20 @@ public final class GameCardView extends VBox {
     getStyleClass().add("game-card");
     setPrefWidth(220);
 
-    Region art = new Region();
-    art.getStyleClass().add("card-art");
-    art.setPrefHeight(100);
+    Region artBackground = new Region();
+    artBackground.getStyleClass().add("card-art");
+    artBackground.setPrefSize(ART_WIDTH, ART_HEIGHT);
+
+    artView.setFitWidth(ART_WIDTH);
+    artView.setFitHeight(ART_HEIGHT);
+    artView.setPreserveRatio(false);
+    artView.setSmooth(true);
+    artView.setVisible(false);
+
+    artHost = new StackPane(artBackground, artView);
+    artHost.setPrefSize(ART_WIDTH, ART_HEIGHT);
+    artHost.setMinHeight(ART_HEIGHT);
+    artHost.getStyleClass().add("card-art-host");
 
     Label title = new Label(displayName);
     title.getStyleClass().add("card-title");
@@ -58,8 +78,29 @@ public final class GameCardView extends VBox {
     syncButton.setVisible(false);
     syncButton.setManaged(false);
 
-    getChildren().addAll(art, title, statusLine, timeLabel, syncButton);
+    getChildren().addAll(artHost, title, statusLine, timeLabel, syncButton);
     applyStatusStyle();
+  }
+
+  /** Display an art image loaded from a local cached file. No-op when the image fails to decode. */
+  public void setArt(Path file) {
+    try {
+      Image image = new Image(file.toUri().toString(), ART_WIDTH, ART_HEIGHT, false, true, true);
+      image
+          .errorProperty()
+          .addListener(
+              (obs, old, now) -> {
+                if (Boolean.TRUE.equals(now)) {
+                  artView.setImage(null);
+                  artView.setVisible(false);
+                }
+              });
+      artView.setImage(image);
+      artView.setVisible(true);
+    } catch (RuntimeException e) {
+      artView.setImage(null);
+      artView.setVisible(false);
+    }
   }
 
   public void setOnSyncNow(Consumer<GameId> handler) {
