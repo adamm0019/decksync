@@ -552,6 +552,95 @@
     -fx-text-fill: -color-bad;
 }
 
+/* ---------- settings ---------- */
+
+.settings-stack {
+    -fx-spacing: 12;
+    -fx-padding: 8 4 16 4;
+}
+
+.settings-card {
+    -fx-background-color: -color-bg-card;
+    -fx-background-radius: 8;
+    -fx-border-color: -color-border;
+    -fx-border-radius: 8;
+    -fx-border-width: 1;
+    -fx-padding: 16 18 16 18;
+    -fx-spacing: 8;
+}
+
+.settings-card-title {
+    -fx-font-size: 15px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -color-text-primary;
+}
+
+.settings-card-hint {
+    -fx-font-size: 12px;
+    -fx-text-fill: -color-text-secondary;
+    -fx-wrap-text: true;
+}
+
+.settings-row {
+    -fx-alignment: center-left;
+    -fx-spacing: 12;
+    -fx-padding: 2 0 2 0;
+}
+
+.settings-label {
+    -fx-min-width: 110;
+    -fx-font-size: 12px;
+    -fx-text-fill: -color-text-tertiary;
+}
+
+.settings-value {
+    -fx-font-size: 13px;
+    -fx-text-fill: -color-text-primary;
+}
+
+.settings-value-path {
+    -fx-font-family: "JetBrains Mono", "Cascadia Mono", "Consolas", monospace;
+    -fx-font-size: 12px;
+    -fx-text-fill: -color-text-secondary;
+}
+
+.settings-actions {
+    -fx-alignment: center-left;
+    -fx-spacing: 12;
+    -fx-padding: 6 0 0 0;
+}
+
+.settings-test-result {
+    -fx-font-size: 12px;
+    -fx-text-fill: -color-text-secondary;
+}
+
+.settings-test-result.ok { -fx-text-fill: -color-ok; }
+.settings-test-result.bad { -fx-text-fill: -color-bad; }
+
+.settings-games {
+    -fx-spacing: 2;
+    -fx-padding: 4 0 0 2;
+}
+
+.settings-game-row {
+    -fx-font-size: 13px;
+    -fx-text-fill: -color-text-primary;
+}
+
+.settings-code {
+    -fx-font-family: "JetBrains Mono", "Cascadia Mono", "Consolas", monospace;
+    -fx-font-size: 12px;
+    -fx-text-fill: -color-text-primary;
+    -fx-background-color: -color-bg-elevated;
+    -fx-background-radius: 4;
+    -fx-border-color: -color-border;
+    -fx-border-radius: 4;
+    -fx-border-width: 1;
+    -fx-padding: 8 12 8 12;
+    -fx-wrap-text: true;
+}
+
 /* ---------- log drawer (placeholder — wired in M7i) ---------- */
 
 .log-drawer-handle {

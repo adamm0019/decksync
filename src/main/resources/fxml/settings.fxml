@@ -1,15 +1,97 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.control.Button?>
 <?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
 <?import javafx.scene.layout.VBox?>
 <VBox xmlns="http://javafx.com/javafx/21"
       xmlns:fx="http://javafx.com/fxml/1"
       fx:controller="dev.decksync.gui.controller.SettingsController"
       styleClass="destination">
 
-    <Label text="SETTINGS" styleClass="section-heading"/>
+    <HBox alignment="CENTER_LEFT" spacing="12">
+        <Label text="SETTINGS" styleClass="section-heading"/>
+        <Region HBox.hgrow="ALWAYS"/>
+        <Label text="Edit ~/.decksync/config.yml to change these values" styleClass="section-meta"/>
+    </HBox>
 
-    <VBox styleClass="empty-state">
-        <Label text="Settings editor coming soon" styleClass="empty-title"/>
-        <Label text="For now, hand-edit ~/.decksync/config.yml or re-run setup." styleClass="empty-subtitle"/>
-    </VBox>
+    <ScrollPane fitToWidth="true" styleClass="plain-scroll" VBox.vgrow="ALWAYS">
+        <VBox styleClass="settings-stack">
+
+            <VBox styleClass="settings-card">
+                <Label text="Peer" styleClass="settings-card-title"/>
+                <Label text="The other machine DeckSync syncs with over HTTP." styleClass="settings-card-hint"/>
+                <HBox styleClass="settings-row">
+                    <Label text="URL" styleClass="settings-label"/>
+                    <Label fx:id="peerUrlValue" styleClass="settings-value"/>
+                </HBox>
+                <HBox styleClass="settings-row">
+                    <Label text="Listen port" styleClass="settings-label"/>
+                    <Label fx:id="portValue" styleClass="settings-value"/>
+                </HBox>
+                <HBox styleClass="settings-actions">
+                    <Button fx:id="testButton" text="Test connection" styleClass="button-ghost" onAction="#onTestConnection"/>
+                    <Label fx:id="testResultLabel" styleClass="settings-test-result"/>
+                </HBox>
+            </VBox>
+
+            <VBox styleClass="settings-card">
+                <Label text="Watched games" styleClass="settings-card-title"/>
+                <Label fx:id="gamesSummaryLabel" styleClass="settings-card-hint"/>
+                <VBox fx:id="gamesListBox" styleClass="settings-games"/>
+            </VBox>
+
+            <VBox styleClass="settings-card">
+                <Label text="Backups" styleClass="settings-card-title"/>
+                <Label text="Every file overwrite is archived under ~/.decksync/history/ so sync mistakes can be rolled back from the History tab." styleClass="settings-card-hint"/>
+                <HBox styleClass="settings-row">
+                    <Label text="Retention" styleClass="settings-label"/>
+                    <Label fx:id="retentionValue" styleClass="settings-value"/>
+                </HBox>
+            </VBox>
+
+            <VBox styleClass="settings-card">
+                <Label text="Locations" styleClass="settings-card-title"/>
+                <Label text="Where DeckSync keeps its config, cache, and backups on this machine." styleClass="settings-card-hint"/>
+                <HBox styleClass="settings-row">
+                    <Label text="Config" styleClass="settings-label"/>
+                    <Label fx:id="configPathValue" styleClass="settings-value-path"/>
+                </HBox>
+                <HBox styleClass="settings-row">
+                    <Label text="History" styleClass="settings-label"/>
+                    <Label fx:id="historyPathValue" styleClass="settings-value-path"/>
+                </HBox>
+                <HBox styleClass="settings-row">
+                    <Label text="Cache" styleClass="settings-label"/>
+                    <Label fx:id="cachePathValue" styleClass="settings-value-path"/>
+                </HBox>
+                <HBox styleClass="settings-actions">
+                    <Button text="Open folder" styleClass="button-ghost" onAction="#onOpenConfigDir"/>
+                </HBox>
+            </VBox>
+
+            <VBox styleClass="settings-card">
+                <Label text="Firewall" styleClass="settings-card-title"/>
+                <Label text="DeckSync needs an inbound TCP rule on the sync port so the peer can reach this machine." styleClass="settings-card-hint"/>
+                <Label fx:id="firewallSnippetLabel" styleClass="settings-code"/>
+                <HBox styleClass="settings-actions">
+                    <Button fx:id="copyFirewallButton" text="Copy snippet" styleClass="button-ghost" onAction="#onCopyFirewall"/>
+                </HBox>
+            </VBox>
+
+            <VBox styleClass="settings-card">
+                <Label text="Autostart" styleClass="settings-card-title"/>
+                <Label fx:id="autostartHintLabel" styleClass="settings-card-hint"/>
+            </VBox>
+
+            <VBox styleClass="settings-card">
+                <Label text="Re-run setup" styleClass="settings-card-title"/>
+                <Label text="Walks through peer URL, games, and retention again. Edits config.yml in place." styleClass="settings-card-hint"/>
+                <Label text="Run from a terminal:" styleClass="settings-card-hint"/>
+                <Label text="decksync setup" styleClass="settings-code"/>
+            </VBox>
+
+        </VBox>
+    </ScrollPane>
 </VBox>
