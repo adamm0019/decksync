@@ -1,19 +1,20 @@
-package dev.decksync.cli;
+package dev.decksync.application;
 
 import dev.decksync.domain.GameId;
 
 /**
- * Parses the free-form {@code <gameId>} token accepted by CLI subcommands. A bare positive integer
- * or a {@code steam:} prefix means a Steam appid; anything else is parsed as a kebab-case slug.
- * Kept off the picocli command classes so scan and sync can share it.
+ * Parses the free-form {@code <gameId>} token accepted by both CLI subcommands and HTTP path
+ * parameters. A bare positive integer or a {@code steam:} prefix means a Steam appid; anything else
+ * is parsed as a kebab-case slug. Lives in the application layer so any adapter (cli, web) can
+ * reuse it without reinventing the grammar.
  */
-final class GameIdParser {
+public final class GameIdParser {
 
   private static final String STEAM_PREFIX = "steam:";
 
   private GameIdParser() {}
 
-  static GameId parse(String raw) {
+  public static GameId parse(String raw) {
     if (raw == null || raw.isBlank()) {
       throw new IllegalArgumentException("gameId must not be blank");
     }

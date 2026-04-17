@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import dev.decksync.application.FileScanner;
 import dev.decksync.application.GameCatalog;
+import dev.decksync.application.GameIdParser;
 import dev.decksync.application.HashCache;
 import dev.decksync.domain.AbsolutePath;
 import dev.decksync.domain.GameId;

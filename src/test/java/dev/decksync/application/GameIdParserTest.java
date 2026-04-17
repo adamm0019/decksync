@@ -1,4 +1,4 @@
-package dev.decksync.cli;
+package dev.decksync.application;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
