@@ -94,6 +94,10 @@ tasks.withType<JavaCompile>().configureEach {
 
 tasks.withType<Test>().configureEach {
     useJUnitPlatform()
+    // SnakeYAML expands the ~17 MB Ludusavi manifest into a few hundred MB of Java
+    // objects during parsing; give each worker JVM enough headroom to handle it
+    // without OOM while other tests (which use far less) are unaffected.
+    maxHeapSize = "2g"
 }
 
 val integrationTest = tasks.register<Test>("integrationTest") {
@@ -111,3 +115,34 @@ tasks.check {
 springBoot {
     mainClass = "dev.decksync.DeckSyncApplication"
 }
+
+// Ludusavi manifest — the save-path database DeckSync uses to resolve games across OSes.
+// Pinned to a specific upstream commit so the resolution logic is reproducible; bump the
+// SHA intentionally when we want newer game coverage. The file is ~17 MB, so we download
+// it at build time (cached per-SHA under build/) rather than checking it into git.
+val ludusaviManifestSha = "d22e98100d6132c813d420644dde7445e701b416"
+val ludusaviManifestDir = layout.buildDirectory.dir("ludusavi-manifest")
+val ludusaviManifestFile = ludusaviManifestDir.map { it.file("ludusavi/manifest.yaml") }
+
+val downloadLudusaviManifest =
+    tasks.register("downloadLudusaviManifest") {
+        description = "Downloads the pinned Ludusavi manifest YAML into the build directory."
+        group = "build"
+        inputs.property("sha", ludusaviManifestSha)
+        outputs.file(ludusaviManifestFile)
+        doLast {
+            val target = ludusaviManifestFile.get().asFile
+            target.parentFile.mkdirs()
+            val source =
+                uri(
+                    "https://raw.githubusercontent.com/mtkennerly/ludusavi-manifest/" +
+                        "$ludusaviManifestSha/data/manifest.yaml",
+                )
+                    .toURL()
+            source.openStream().use { input ->
+                target.outputStream().use { output -> input.copyTo(output) }
+            }
+        }
+    }
+
+sourceSets.main.get().resources.srcDir(downloadLudusaviManifest.map { ludusaviManifestDir })
