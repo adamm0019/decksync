@@ -11,7 +11,7 @@ import picocli.CommandLine.Spec;
     mixinStandardHelpOptions = true,
     version = "decksync 0.1.0-SNAPSHOT",
     description = "LAN peer-to-peer game save sync for Windows and SteamOS.",
-    subcommands = {ListGamesCommand.class})
+    subcommands = {ListGamesCommand.class, ScanCommand.class})
 public class DeckSyncCommand implements Runnable {
 
   @Spec private CommandSpec spec;

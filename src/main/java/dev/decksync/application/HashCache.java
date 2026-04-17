@@ -17,4 +17,13 @@ public interface HashCache {
   Optional<Sha256> lookup(Path path, long size, Instant mtime);
 
   void store(Path path, long size, Instant mtime, Sha256 hash);
+
+  /**
+   * Flush any in-memory state to durable storage. Called by callers (CLI, sync engine) at natural
+   * checkpoints — typically the end of a scan. A no-op by default so purely in-memory
+   * implementations can ignore it.
+   */
+  default void persist() {
+    // no-op
+  }
 }

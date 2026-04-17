@@ -74,6 +74,7 @@ public final class FileHashCache implements HashCache {
     }
   }
 
+  @Override
   public synchronized void persist() {
     if (!dirty) {
       return;

@@ -57,6 +57,7 @@ val archunitVersion = "1.3.0"
 
 dependencies {
     implementation("org.springframework.boot:spring-boot-starter")
+    implementation("org.springframework.boot:spring-boot-starter-json")
     implementation("info.picocli:picocli:$picocliVersion")
     implementation("info.picocli:picocli-spring-boot-starter:$picocliVersion")
     implementation("org.yaml:snakeyaml")

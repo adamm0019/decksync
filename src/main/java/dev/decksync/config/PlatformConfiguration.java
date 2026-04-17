@@ -30,7 +30,7 @@ public class PlatformConfiguration {
   }
 
   @Bean
-  public Environment environment() {
+  public Environment deckSyncEnvironment() {
     return new SystemEnvironment();
   }
 
