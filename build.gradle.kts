@@ -25,6 +25,23 @@ repositories {
     mavenCentral()
 }
 
+// Dedicated source set for end-to-end / two-JVM tests — kept separate from
+// unit tests so `./gradlew test` stays fast and `./gradlew integrationTest`
+// can be run on demand or as part of `check`.
+sourceSets {
+    create("integrationTest") {
+        compileClasspath += sourceSets.main.get().output
+        runtimeClasspath += sourceSets.main.get().output
+    }
+}
+
+val integrationTestImplementation: Configuration by configurations.getting {
+    extendsFrom(configurations.testImplementation.get())
+}
+val integrationTestRuntimeOnly: Configuration by configurations.getting {
+    extendsFrom(configurations.testRuntimeOnly.get())
+}
+
 val picocliVersion = "4.7.6"
 val wiremockVersion = "3.9.1"
 
@@ -46,6 +63,18 @@ tasks.withType<JavaCompile>().configureEach {
 
 tasks.withType<Test>().configureEach {
     useJUnitPlatform()
+}
+
+val integrationTest = tasks.register<Test>("integrationTest") {
+    description = "Runs two-JVM end-to-end sync tests."
+    group = "verification"
+    testClassesDirs = sourceSets["integrationTest"].output.classesDirs
+    classpath = sourceSets["integrationTest"].runtimeClasspath
+    shouldRunAfter(tasks.test)
+}
+
+tasks.check {
+    dependsOn(integrationTest)
 }
 
 springBoot {
