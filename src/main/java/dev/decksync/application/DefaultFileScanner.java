@@ -54,14 +54,16 @@ public final class DefaultFileScanner implements FileScanner {
 
   private final Clock clock;
   private final Duration stabilityWindow;
+  private final HashCache hashCache;
 
   public DefaultFileScanner() {
-    this(Clock.systemUTC(), DEFAULT_STABILITY_WINDOW);
+    this(Clock.systemUTC(), DEFAULT_STABILITY_WINDOW, NoopHashCache.INSTANCE);
   }
 
-  public DefaultFileScanner(Clock clock, Duration stabilityWindow) {
+  public DefaultFileScanner(Clock clock, Duration stabilityWindow, HashCache hashCache) {
     this.clock = Objects.requireNonNull(clock, "clock");
     this.stabilityWindow = Objects.requireNonNull(stabilityWindow, "stabilityWindow");
+    this.hashCache = Objects.requireNonNull(hashCache, "hashCache");
   }
 
   @Override
@@ -94,7 +96,14 @@ public final class DefaultFileScanner implements FileScanner {
       }
       long size = Files.size(file);
       LogicalPath logicalPath = toLogical(root, file);
-      Sha256 hash = hashWithProbeLock(file);
+      java.util.Optional<Sha256> cached = hashCache.lookup(file, size, mtime);
+      Sha256 hash;
+      if (cached.isPresent()) {
+        hash = cached.get();
+      } else {
+        hash = hashWithProbeLock(file);
+        hashCache.store(file, size, mtime, hash);
+      }
       return java.util.Optional.of(new FileEntry(logicalPath, size, mtime, hash));
     } catch (FileBusyException e) {
       log.debug("Skipping {} — held open by another process", file);

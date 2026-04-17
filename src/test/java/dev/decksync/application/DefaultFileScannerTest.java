@@ -117,6 +117,7 @@ class DefaultFileScannerTest {
   }
 
   private static DefaultFileScanner newScanner() {
-    return new DefaultFileScanner(Clock.fixed(NOW, ZoneOffset.UTC), Duration.ofSeconds(3));
+    return new DefaultFileScanner(
+        Clock.fixed(NOW, ZoneOffset.UTC), Duration.ofSeconds(3), NoopHashCache.INSTANCE);
   }
 }
