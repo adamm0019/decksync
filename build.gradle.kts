@@ -63,7 +63,7 @@ dependencies {
     implementation("org.yaml:snakeyaml")
 
     testImplementation("org.springframework.boot:spring-boot-starter-test")
-    testImplementation("org.wiremock:wiremock:$wiremockVersion")
+    testImplementation("org.wiremock:wiremock-standalone:$wiremockVersion")
     testImplementation("com.tngtech.archunit:archunit-junit5:$archunitVersion")
 
     errorprone("com.google.errorprone:error_prone_core:2.31.0")
