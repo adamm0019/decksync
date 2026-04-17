@@ -1,15 +1,28 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.control.ComboBox?>
 <?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.layout.FlowPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
 <?import javafx.scene.layout.VBox?>
 <VBox xmlns="http://javafx.com/javafx/21"
       xmlns:fx="http://javafx.com/fxml/1"
       fx:controller="dev.decksync.gui.controller.LibraryController"
       styleClass="destination">
 
-    <Label text="LIBRARY" styleClass="section-heading"/>
+    <HBox alignment="CENTER_LEFT" spacing="12">
+        <Label text="LIBRARY" styleClass="section-heading"/>
+        <Region HBox.hgrow="ALWAYS"/>
+        <Label fx:id="countLabel" styleClass="section-meta"/>
+        <ComboBox fx:id="filterCombo" styleClass="filter-combo"/>
+    </HBox>
 
-    <!-- Empty state — replaced by the card grid in M7c. -->
-    <VBox styleClass="empty-state">
+    <ScrollPane fitToWidth="true" styleClass="plain-scroll" VBox.vgrow="ALWAYS">
+        <FlowPane fx:id="cardGrid" hgap="16" vgap="16" styleClass="card-grid"/>
+    </ScrollPane>
+
+    <VBox fx:id="emptyState" styleClass="empty-state">
         <Label text="No games yet" styleClass="empty-title"/>
         <Label text="Run 'decksync setup' to add your peer and pick games." styleClass="empty-subtitle"/>
     </VBox>

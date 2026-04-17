@@ -191,6 +191,113 @@
     -fx-text-fill: -color-text-secondary;
 }
 
+/* ---------- library ---------- */
+
+.section-meta {
+    -fx-font-size: 12px;
+    -fx-text-fill: -color-text-tertiary;
+}
+
+.filter-combo {
+    -fx-background-color: -color-bg-card;
+    -fx-background-radius: 6;
+    -fx-border-color: -color-border;
+    -fx-border-radius: 6;
+    -fx-border-width: 1;
+    -fx-text-fill: -color-text-primary;
+    -fx-font-size: 13px;
+}
+
+.filter-combo .list-cell {
+    -fx-background-color: -color-bg-card;
+    -fx-text-fill: -color-text-primary;
+    -fx-padding: 4 8 4 8;
+}
+
+.filter-combo .arrow { -fx-background-color: -color-text-secondary; }
+
+.filter-combo-popup .list-view {
+    -fx-background-color: -color-bg-elevated;
+    -fx-border-color: -color-border;
+    -fx-border-width: 1;
+}
+
+.filter-combo-popup .list-cell:filled:hover {
+    -fx-background-color: -color-bg-card;
+    -fx-text-fill: -color-text-primary;
+}
+
+/* Transparent scroll wrapper — we don't want a visible frame around the grid. */
+.plain-scroll,
+.plain-scroll .viewport {
+    -fx-background-color: transparent;
+}
+
+.plain-scroll > .corner { -fx-background-color: transparent; }
+
+.card-grid {
+    -fx-padding: 8 0 16 0;
+}
+
+.game-card {
+    -fx-background-color: -color-bg-card;
+    -fx-background-radius: 8;
+    -fx-border-color: -color-border;
+    -fx-border-radius: 8;
+    -fx-border-width: 1;
+    -fx-padding: 12 12 12 12;
+    -fx-spacing: 8;
+    -fx-cursor: hand;
+}
+
+.game-card:hover { -fx-border-color: -color-text-tertiary; }
+
+.card-art {
+    -fx-background-color: -color-bg-elevated;
+    -fx-background-radius: 6;
+    -fx-border-radius: 6;
+}
+
+.card-title {
+    -fx-font-size: 15px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -color-text-primary;
+}
+
+.status-line { -fx-alignment: center-left; }
+
+.status-line .status-glyph {
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+}
+
+.status-line .status-label {
+    -fx-font-size: 13px;
+}
+
+.status-line.ok .status-glyph,
+.status-line.ok .status-label { -fx-text-fill: -color-ok; }
+
+.status-line.info .status-glyph,
+.status-line.info .status-label { -fx-text-fill: -color-info; }
+
+.status-line.warn .status-glyph,
+.status-line.warn .status-label { -fx-text-fill: -color-warn; }
+
+.status-line.bad .status-glyph,
+.status-line.bad .status-label { -fx-text-fill: -color-bad; }
+
+.status-line.muted .status-glyph,
+.status-line.muted .status-label { -fx-text-fill: -color-text-tertiary; }
+
+.status-line.loading .status-glyph,
+.status-line.loading .status-label { -fx-text-fill: -color-text-tertiary; }
+
+.card-time {
+    -fx-font-size: 12px;
+    -fx-text-fill: -color-text-secondary;
+}
+
 /* ---------- log drawer (placeholder — wired in M7i) ---------- */
 
 .log-drawer-handle {

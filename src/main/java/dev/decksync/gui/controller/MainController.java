@@ -1,8 +1,12 @@
 package dev.decksync.gui.controller;
 
+import dev.decksync.application.PeerReachability;
+import dev.decksync.application.PeerStatus;
 import java.io.IOException;
 import java.io.UncheckedIOException;
+import java.time.Duration;
 import java.util.List;
+import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
@@ -22,6 +26,7 @@ import org.springframework.stereotype.Component;
 public class MainController {
 
   private final ApplicationContext context;
+  private final PeerReachability reachability;
 
   @FXML private StackPane destinationHost;
   @FXML private HBox peerPill;
@@ -30,14 +35,30 @@ public class MainController {
   @FXML private Button historyNavButton;
   @FXML private Button settingsNavButton;
 
-  public MainController(ApplicationContext context) {
+  public MainController(ApplicationContext context, PeerReachability reachability) {
     this.context = context;
+    this.reachability = reachability;
   }
 
   @FXML
   void initialize() {
-    setPeerStatus(PeerStatus.UNKNOWN, "Peer: not configured");
+    setPeerPill(PillState.UNKNOWN, "Peer: checking…");
     onShowLibrary();
+    Thread.ofVirtual().name("peer-pill-probe").start(this::refreshPeerPill);
+  }
+
+  private void refreshPeerPill() {
+    PeerStatus status = reachability.probe();
+    Platform.runLater(() -> applyPeerStatus(status));
+  }
+
+  private void applyPeerStatus(PeerStatus status) {
+    if (status instanceof PeerStatus.Reachable reachable) {
+      Duration rtt = reachable.rtt();
+      setPeerPill(PillState.OK, "Peer connected · " + rtt.toMillis() + "ms");
+    } else if (status instanceof PeerStatus.Unreachable) {
+      setPeerPill(PillState.BAD, "Peer unreachable");
+    }
   }
 
   @FXML
@@ -88,13 +109,10 @@ public class MainController {
     }
   }
 
-  /**
-   * Peer state classes toggle the pill's colour via CSS. Live wiring to a reachability probe lands
-   * in M7c when the card grid needs the same data.
-   */
-  void setPeerStatus(PeerStatus status, String labelText) {
+  /** Pill colour via style class; neutral grey when UNKNOWN. */
+  private void setPeerPill(PillState state, String labelText) {
     peerPill.getStyleClass().removeAll("ok", "warn", "bad");
-    switch (status) {
+    switch (state) {
       case OK -> peerPill.getStyleClass().add("ok");
       case WARN -> peerPill.getStyleClass().add("warn");
       case BAD -> peerPill.getStyleClass().add("bad");
@@ -105,7 +123,7 @@ public class MainController {
     peerLabel.setText(labelText);
   }
 
-  enum PeerStatus {
+  private enum PillState {
     OK,
     WARN,
     BAD,
