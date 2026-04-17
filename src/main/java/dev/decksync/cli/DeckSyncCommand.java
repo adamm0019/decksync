@@ -15,6 +15,7 @@ import picocli.CommandLine.Spec;
       ListGamesCommand.class,
       ScanCommand.class,
       ServeCommand.class,
+      StatusCommand.class,
       SyncCommand.class
     })
 public class DeckSyncCommand implements Runnable {

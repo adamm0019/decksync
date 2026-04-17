@@ -7,9 +7,11 @@ import dev.decksync.application.FileApplier;
 import dev.decksync.application.FileScanner;
 import dev.decksync.application.GameCatalog;
 import dev.decksync.application.PeerClient;
+import dev.decksync.application.PeerReachability;
 import dev.decksync.application.SyncPlanner;
 import dev.decksync.application.SyncService;
 import dev.decksync.infrastructure.net.HttpPeerClient;
+import dev.decksync.infrastructure.net.HttpPeerReachability;
 import java.nio.file.Path;
 import java.time.Clock;
 import org.springframework.context.annotation.Bean;
@@ -46,6 +48,11 @@ public class SyncConfiguration {
   @Bean
   public PeerClient peerClient(RestClient.Builder builder, DeckSyncConfig config) {
     return HttpPeerClient.create(builder, config.peerUrl());
+  }
+
+  @Bean
+  public PeerReachability peerReachability(DeckSyncConfig config) {
+    return new HttpPeerReachability(config.peerUrl());
   }
 
   @Bean

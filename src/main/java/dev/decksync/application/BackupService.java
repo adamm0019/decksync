@@ -7,9 +7,13 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.time.Clock;
+import java.time.Instant;
+import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Stream;
 
 /**
@@ -26,7 +30,7 @@ public final class BackupService {
 
   /** {@code 2026-04-17T20-00-00Z} — sortable and Windows-safe. */
   private static final DateTimeFormatter TIMESTAMP =
-      DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH-mm-ss'Z'").withZone(java.time.ZoneOffset.UTC);
+      DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH-mm-ss'Z'").withZone(ZoneOffset.UTC);
 
   private final Path historyRoot;
   private final Clock clock;
@@ -62,6 +66,28 @@ public final class BackupService {
     int toDelete = snapshots.size() - keep;
     for (int i = 0; i < toDelete; i++) {
       deleteRecursively(snapshots.get(i));
+    }
+  }
+
+  public Optional<Instant> latestSnapshot(GameId game) throws IOException {
+    Path gameHistory = gameHistory(game);
+    if (!Files.isDirectory(gameHistory)) {
+      return Optional.empty();
+    }
+    try (Stream<Path> entries = Files.list(gameHistory)) {
+      return entries
+          .filter(Files::isDirectory)
+          .map(p -> parseTimestamp(p.getFileName().toString()))
+          .flatMap(Optional::stream)
+          .max(Comparator.naturalOrder());
+    }
+  }
+
+  private static Optional<Instant> parseTimestamp(String dirName) {
+    try {
+      return Optional.of(Instant.from(TIMESTAMP.parse(dirName)));
+    } catch (DateTimeParseException e) {
+      return Optional.empty();
     }
   }
 

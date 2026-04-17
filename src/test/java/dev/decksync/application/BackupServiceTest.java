@@ -100,6 +100,27 @@ class BackupServiceTest {
     assertThat(historyRoot.resolve("stardew-valley/2026-04-17T20-00-00Z/save.sav")).exists();
   }
 
+  @Test
+  void latestSnapshotReturnsMostRecentSnapshotInstant(@TempDir Path tmp) throws Exception {
+    Path historyRoot = tmp.resolve("history");
+    Path gameHistory = historyRoot.resolve("steam-1245620");
+    Files.createDirectories(gameHistory.resolve("2026-04-10T20-00-00Z"));
+    Files.createDirectories(gameHistory.resolve("2026-04-14T20-00-00Z"));
+    Files.createDirectories(gameHistory.resolve("2026-04-12T20-00-00Z"));
+
+    BackupService service = new BackupService(historyRoot, fixedClock("2026-04-15T20:00:00Z"));
+
+    assertThat(service.latestSnapshot(GAME)).contains(Instant.parse("2026-04-14T20:00:00Z"));
+  }
+
+  @Test
+  void latestSnapshotEmptyWhenNoHistoryDir(@TempDir Path tmp) throws Exception {
+    BackupService service =
+        new BackupService(tmp.resolve("history"), fixedClock("2026-04-15T20:00:00Z"));
+
+    assertThat(service.latestSnapshot(GAME)).isEmpty();
+  }
+
   private static Clock fixedClock(String isoInstant) {
     return Clock.fixed(Instant.parse(isoInstant), ZoneOffset.UTC);
   }
