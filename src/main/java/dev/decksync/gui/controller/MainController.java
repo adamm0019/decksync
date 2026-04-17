@@ -16,16 +16,21 @@ import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
+import javafx.animation.FadeTransition;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
+import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyCodeCombination;
+import javafx.scene.input.KeyCombination;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
@@ -80,7 +85,39 @@ public class MainController {
     onShowLibrary();
     Thread.ofVirtual().name("peer-pill-probe").start(this::refreshPeerPill);
     initLogDrawer();
+    // Scene isn't available at FXML load — hook accelerators once it appears.
+    destinationHost
+        .sceneProperty()
+        .addListener(
+            (obs, oldScene, scene) -> {
+              if (scene != null) {
+                installAccelerators(scene);
+              }
+            });
     maybeShowFirstRun();
+  }
+
+  private void installAccelerators(Scene scene) {
+    scene
+        .getAccelerators()
+        .put(
+            new KeyCodeCombination(KeyCode.DIGIT1, KeyCombination.SHORTCUT_DOWN),
+            this::onShowLibrary);
+    scene
+        .getAccelerators()
+        .put(
+            new KeyCodeCombination(KeyCode.DIGIT2, KeyCombination.SHORTCUT_DOWN),
+            this::onShowHistory);
+    scene
+        .getAccelerators()
+        .put(
+            new KeyCodeCombination(KeyCode.DIGIT3, KeyCombination.SHORTCUT_DOWN),
+            this::onShowSettings);
+    scene
+        .getAccelerators()
+        .put(
+            new KeyCodeCombination(KeyCode.L, KeyCombination.SHORTCUT_DOWN),
+            this::onToggleLogDrawer);
   }
 
   private void initLogDrawer() {
@@ -94,12 +131,16 @@ public class MainController {
             event ->
                 Platform.runLater(
                     () -> {
+                      // Only auto-scroll if the user is already near the bottom — don't yank a
+                      // view that's been scrolled up to read older entries.
+                      boolean wasAtBottom =
+                          logRows.isEmpty() || logListView.getSelectionModel().isEmpty();
                       logRows.add(event);
                       while (logRows.size() > GuiLogBuffer.CAPACITY) {
                         logRows.remove(0);
                       }
                       updateLogCountLabel();
-                      if (logDrawerOpen && !logRows.isEmpty()) {
+                      if (logDrawerOpen && wasAtBottom && !logRows.isEmpty()) {
                         logListView.scrollTo(logRows.size() - 1);
                       }
                     }));
@@ -113,11 +154,28 @@ public class MainController {
   @FXML
   void onToggleLogDrawer() {
     logDrawerOpen = !logDrawerOpen;
-    logDrawerContent.setVisible(logDrawerOpen);
-    logDrawerContent.setManaged(logDrawerOpen);
     logDrawerHandle.setText(logDrawerOpen ? "▼ Hide log" : "▲ Show log");
-    if (logDrawerOpen && !logRows.isEmpty()) {
-      logListView.scrollTo(logRows.size() - 1);
+    if (logDrawerOpen) {
+      logDrawerContent.setOpacity(0);
+      logDrawerContent.setManaged(true);
+      logDrawerContent.setVisible(true);
+      FadeTransition fade = new FadeTransition(javafx.util.Duration.millis(180), logDrawerContent);
+      fade.setFromValue(0);
+      fade.setToValue(1);
+      fade.play();
+      if (!logRows.isEmpty()) {
+        logListView.scrollTo(logRows.size() - 1);
+      }
+    } else {
+      FadeTransition fade = new FadeTransition(javafx.util.Duration.millis(120), logDrawerContent);
+      fade.setFromValue(logDrawerContent.getOpacity());
+      fade.setToValue(0);
+      fade.setOnFinished(
+          e -> {
+            logDrawerContent.setVisible(false);
+            logDrawerContent.setManaged(false);
+          });
+      fade.play();
     }
   }
 

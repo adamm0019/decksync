@@ -118,6 +118,7 @@
 
 /* ---------- buttons ---------- */
 
+/* Min-heights sized for Steam Deck touch: 44px primary, 36px ghost. */
 .button-primary {
     -fx-background-color: -color-accent;
     -fx-text-fill: white;
@@ -125,12 +126,16 @@
     -fx-font-weight: bold;
     -fx-background-radius: 6;
     -fx-border-radius: 6;
-    -fx-padding: 8 16 8 16;
+    -fx-padding: 10 18 10 18;
+    -fx-min-height: 36;
     -fx-cursor: hand;
 }
 
 .button-primary:hover { -fx-background-color: -color-accent-hover; }
 .button-primary:pressed { -fx-background-color: -color-accent-press; }
+.button-primary:focused {
+    -fx-effect: dropshadow(gaussian, -color-accent, 8, 0.3, 0, 0);
+}
 
 .button-ghost {
     -fx-background-color: transparent;
@@ -140,11 +145,13 @@
     -fx-border-radius: 6;
     -fx-border-color: -color-border;
     -fx-border-width: 1;
-    -fx-padding: 7 14 7 14;
+    -fx-padding: 8 16 8 16;
+    -fx-min-height: 34;
     -fx-cursor: hand;
 }
 
 .button-ghost:hover { -fx-background-color: -color-bg-card; }
+.button-ghost:focused { -fx-border-color: -color-accent; }
 
 .icon-button {
     -fx-background-color: transparent;
