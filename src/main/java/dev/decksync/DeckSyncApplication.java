@@ -1,5 +1,7 @@
 package dev.decksync;
 
+import java.util.ArrayList;
+import java.util.List;
 import org.springframework.boot.Banner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.WebApplicationType;
@@ -9,15 +11,16 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 public class DeckSyncApplication {
 
   public static void main(String[] args) {
+    String[] translated = translateLogFormat(args);
     SpringApplication app = new SpringApplication(DeckSyncApplication.class);
     // Only the `serve` subcommand wants Tomcat running — every other CLI invocation
     // (list-games, scan, …) should start, do its work, and exit. We peek at argv
     // ahead of Spring so the decision is made before the context refreshes and we
     // don't pay the Tomcat startup cost on every one-shot command.
     app.setWebApplicationType(
-        isServeInvocation(args) ? WebApplicationType.SERVLET : WebApplicationType.NONE);
+        isServeInvocation(translated) ? WebApplicationType.SERVLET : WebApplicationType.NONE);
     app.setBannerMode(Banner.Mode.OFF);
-    System.exit(SpringApplication.exit(app.run(args)));
+    System.exit(SpringApplication.exit(app.run(translated)));
   }
 
   private static boolean isServeInvocation(String[] args) {
@@ -28,5 +31,26 @@ public class DeckSyncApplication {
       return "serve".equals(arg);
     }
     return false;
+  }
+
+  /**
+   * Expand the user-facing {@code --log.format=json} shorthand into Spring Boot 3.4's built-in
+   * structured-logging property. Keeping this translation in {@code main} means picocli doesn't
+   * have to model the flag — it's a process-level concern, not a subcommand option. Any arg we
+   * don't recognise is passed through unchanged.
+   */
+  private static String[] translateLogFormat(String[] args) {
+    List<String> out = new ArrayList<>(args.length);
+    for (String arg : args) {
+      if (arg == null) {
+        continue;
+      }
+      if ("--log.format=json".equals(arg)) {
+        out.add("--logging.structured.format.console=ecs");
+      } else {
+        out.add(arg);
+      }
+    }
+    return out.toArray(new String[0]);
   }
 }
