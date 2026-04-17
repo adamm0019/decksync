@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ListView?>
 <?import javafx.scene.layout.BorderPane?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.Region?>
@@ -43,6 +44,16 @@
     </center>
 
     <bottom>
-        <Label text="show log" styleClass="log-drawer-handle" maxWidth="Infinity"/>
+        <VBox fx:id="logDrawer" styleClass="log-drawer">
+            <Label fx:id="logDrawerHandle" text="▲ Show log" styleClass="log-drawer-handle" maxWidth="Infinity" onMouseClicked="#onToggleLogDrawer"/>
+            <VBox fx:id="logDrawerContent" styleClass="log-drawer-content" visible="false" managed="false">
+                <HBox styleClass="log-drawer-toolbar">
+                    <Label fx:id="logCountLabel" styleClass="log-drawer-count"/>
+                    <Region HBox.hgrow="ALWAYS"/>
+                    <Button text="Clear" styleClass="button-ghost" onAction="#onClearLog"/>
+                </HBox>
+                <ListView fx:id="logListView" styleClass="log-list" prefHeight="200.0"/>
+            </VBox>
+        </VBox>
     </bottom>
 </BorderPane>

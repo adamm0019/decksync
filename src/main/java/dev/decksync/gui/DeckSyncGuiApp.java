@@ -1,5 +1,6 @@
 package dev.decksync.gui;
 
+import dev.decksync.gui.log.GuiLogAppender;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import javafx.application.Application;
@@ -22,6 +23,7 @@ public class DeckSyncGuiApp extends Application {
 
   public static void launchWith(ConfigurableApplicationContext context, String[] args) {
     springContext = context;
+    GuiLogAppender.install();
     Application.launch(DeckSyncGuiApp.class, args);
   }
 

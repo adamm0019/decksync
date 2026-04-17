@@ -753,7 +753,11 @@
     -fx-alignment: center-left;
 }
 
-/* ---------- log drawer (placeholder — wired in M7i) ---------- */
+/* ---------- log drawer ---------- */
+
+.log-drawer {
+    -fx-background-color: -color-bg-card;
+}
 
 .log-drawer-handle {
     -fx-background-color: -color-bg-card;
@@ -764,4 +768,79 @@
     -fx-alignment: center;
     -fx-padding: 6 0 6 0;
     -fx-cursor: hand;
+}
+
+.log-drawer-handle:hover {
+    -fx-text-fill: -color-text-secondary;
+    -fx-background-color: -color-bg-elevated;
+}
+
+.log-drawer-content {
+    -fx-background-color: -color-bg-card;
+    -fx-border-color: -color-border;
+    -fx-border-width: 1 0 0 0;
+}
+
+.log-drawer-toolbar {
+    -fx-alignment: center-left;
+    -fx-padding: 8 12 8 16;
+    -fx-spacing: 10;
+    -fx-border-color: -color-divider;
+    -fx-border-width: 0 0 1 0;
+}
+
+.log-drawer-count {
+    -fx-font-size: 12px;
+    -fx-text-fill: -color-text-tertiary;
+}
+
+.log-list,
+.log-list .viewport {
+    -fx-background-color: -color-bg-app;
+    -fx-background-insets: 0;
+    -fx-padding: 0;
+}
+
+.log-list .list-cell {
+    -fx-background-color: transparent;
+    -fx-padding: 3 12 3 12;
+    -fx-text-fill: -color-text-primary;
+}
+
+.log-list .list-cell:filled:hover {
+    -fx-background-color: -color-bg-card;
+}
+
+.log-list .list-cell:filled:selected {
+    -fx-background-color: -color-bg-elevated;
+}
+
+.log-row {
+    -fx-alignment: center-left;
+}
+
+.log-time {
+    -fx-font-family: "JetBrains Mono", "Cascadia Mono", "Consolas", monospace;
+    -fx-font-size: 11px;
+    -fx-text-fill: -color-text-tertiary;
+    -fx-min-width: 60;
+}
+
+.log-level {
+    -fx-font-family: "JetBrains Mono", "Cascadia Mono", "Consolas", monospace;
+    -fx-font-size: 11px;
+    -fx-font-weight: bold;
+    -fx-min-width: 44;
+    -fx-text-fill: -color-text-secondary;
+}
+
+.log-level.info  { -fx-text-fill: -color-info; }
+.log-level.warn  { -fx-text-fill: -color-warn; }
+.log-level.error { -fx-text-fill: -color-bad; }
+.log-level.debug { -fx-text-fill: -color-text-tertiary; }
+
+.log-message {
+    -fx-font-family: "JetBrains Mono", "Cascadia Mono", "Consolas", monospace;
+    -fx-font-size: 12px;
+    -fx-text-fill: -color-text-primary;
 }

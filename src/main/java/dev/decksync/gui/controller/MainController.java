@@ -6,20 +6,29 @@ import dev.decksync.application.GameCatalog;
 import dev.decksync.application.PeerReachability;
 import dev.decksync.application.PeerStatus;
 import dev.decksync.domain.GameId;
+import dev.decksync.gui.log.GuiLogBuffer;
+import dev.decksync.gui.log.GuiLogEvent;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.file.Files;
 import java.time.Duration;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import javafx.application.Platform;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.control.ListCell;
+import javafx.scene.control.ListView;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
+import javafx.scene.layout.VBox;
 import javafx.stage.Window;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Component;
@@ -44,6 +53,13 @@ public class MainController {
   @FXML private Button libraryNavButton;
   @FXML private Button historyNavButton;
   @FXML private Button settingsNavButton;
+  @FXML private VBox logDrawerContent;
+  @FXML private Label logDrawerHandle;
+  @FXML private Label logCountLabel;
+  @FXML private ListView<GuiLogEvent> logListView;
+
+  private final ObservableList<GuiLogEvent> logRows = FXCollections.observableArrayList();
+  private boolean logDrawerOpen;
 
   public MainController(
       ApplicationContext context,
@@ -63,7 +79,52 @@ public class MainController {
     setPeerPill(PillState.UNKNOWN, "Peer: checking…");
     onShowLibrary();
     Thread.ofVirtual().name("peer-pill-probe").start(this::refreshPeerPill);
+    initLogDrawer();
     maybeShowFirstRun();
+  }
+
+  private void initLogDrawer() {
+    logListView.setItems(logRows);
+    logListView.setCellFactory(lv -> new LogRowCell());
+    logListView.setFocusTraversable(false);
+    logRows.setAll(GuiLogBuffer.shared().snapshot());
+    updateLogCountLabel();
+    GuiLogBuffer.shared()
+        .addListener(
+            event ->
+                Platform.runLater(
+                    () -> {
+                      logRows.add(event);
+                      while (logRows.size() > GuiLogBuffer.CAPACITY) {
+                        logRows.remove(0);
+                      }
+                      updateLogCountLabel();
+                      if (logDrawerOpen && !logRows.isEmpty()) {
+                        logListView.scrollTo(logRows.size() - 1);
+                      }
+                    }));
+  }
+
+  private void updateLogCountLabel() {
+    int n = logRows.size();
+    logCountLabel.setText(n == 1 ? "1 entry" : n + " entries");
+  }
+
+  @FXML
+  void onToggleLogDrawer() {
+    logDrawerOpen = !logDrawerOpen;
+    logDrawerContent.setVisible(logDrawerOpen);
+    logDrawerContent.setManaged(logDrawerOpen);
+    logDrawerHandle.setText(logDrawerOpen ? "▼ Hide log" : "▲ Show log");
+    if (logDrawerOpen && !logRows.isEmpty()) {
+      logListView.scrollTo(logRows.size() - 1);
+    }
+  }
+
+  @FXML
+  void onClearLog() {
+    logRows.clear();
+    updateLogCountLabel();
   }
 
   private void maybeShowFirstRun() {
@@ -181,5 +242,48 @@ public class MainController {
     WARN,
     BAD,
     UNKNOWN
+  }
+
+  /**
+   * ListCell for a single log row. Uses three labels in an HBox — monospaced timestamp,
+   * colour-coded level, then logger + message. Updated in-place on reuse (JavaFX recycles cells).
+   */
+  private static final class LogRowCell extends ListCell<GuiLogEvent> {
+
+    private static final DateTimeFormatter TIME_FMT =
+        DateTimeFormatter.ofPattern("HH:mm:ss").withZone(ZoneId.systemDefault());
+
+    private final Label time = new Label();
+    private final Label level = new Label();
+    private final Label message = new Label();
+    private final HBox row;
+
+    LogRowCell() {
+      time.getStyleClass().add("log-time");
+      level.getStyleClass().add("log-level");
+      message.getStyleClass().add("log-message");
+      HBox.setHgrow(message, javafx.scene.layout.Priority.ALWAYS);
+      message.setMaxWidth(Double.MAX_VALUE);
+      row = new HBox(8, time, level, message);
+      row.getStyleClass().add("log-row");
+      setGraphic(null);
+    }
+
+    @Override
+    protected void updateItem(GuiLogEvent item, boolean empty) {
+      super.updateItem(item, empty);
+      if (empty || item == null) {
+        setText(null);
+        setGraphic(null);
+        return;
+      }
+      time.setText(TIME_FMT.format(item.when()));
+      level.setText(item.level());
+      level.getStyleClass().removeAll("info", "warn", "error", "debug");
+      level.getStyleClass().add(item.level().toLowerCase(java.util.Locale.ROOT));
+      message.setText(item.logger() + " — " + item.message());
+      setText(null);
+      setGraphic(row);
+    }
   }
 }
