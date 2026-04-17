@@ -298,6 +298,119 @@
     -fx-text-fill: -color-text-secondary;
 }
 
+.card-action {
+    -fx-font-size: 12px;
+    -fx-padding: 5 10 5 10;
+}
+
+/* ---------- preview sheet ---------- */
+
+.preview-sheet {
+    -fx-background-color: -color-bg-app;
+}
+
+.preview-header {
+    -fx-padding: 20 24 12 24;
+    -fx-spacing: 4;
+    -fx-border-color: -color-divider;
+    -fx-border-width: 0 0 1 0;
+}
+
+.preview-title {
+    -fx-font-size: 22px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -color-text-primary;
+}
+
+.preview-subtitle {
+    -fx-font-size: 13px;
+    -fx-text-fill: -color-text-secondary;
+}
+
+.preview-rows {
+    -fx-padding: 8 24 16 24;
+    -fx-spacing: 8;
+}
+
+.preview-row {
+    -fx-background-color: -color-bg-card;
+    -fx-background-radius: 6;
+    -fx-border-color: -color-border;
+    -fx-border-radius: 6;
+    -fx-border-width: 1;
+    -fx-padding: 12 14 12 14;
+    -fx-spacing: 6;
+}
+
+.preview-row-header {
+    -fx-alignment: center-left;
+}
+
+.preview-row-title {
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -color-text-primary;
+}
+
+.preview-row-meta {
+    -fx-font-size: 12px;
+    -fx-text-fill: -color-text-secondary;
+}
+
+.preview-row-status {
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -color-info;
+}
+
+.preview-row-status.pending { -fx-text-fill: -color-text-tertiary; }
+.preview-row-status.applying { -fx-text-fill: -color-info; }
+.preview-row-status.done { -fx-text-fill: -color-ok; }
+.preview-row-status.failed { -fx-text-fill: -color-bad; }
+
+.preview-row-error {
+    -fx-font-size: 12px;
+    -fx-text-fill: -color-bad;
+}
+
+.preview-file-list {
+    -fx-padding: 4 0 0 4;
+}
+
+.preview-file {
+    -fx-alignment: center-left;
+}
+
+.preview-file-path {
+    -fx-font-family: "JetBrains Mono", "Cascadia Mono", "Consolas", monospace;
+    -fx-font-size: 12px;
+    -fx-text-fill: -color-text-secondary;
+}
+
+.preview-file-meta {
+    -fx-font-size: 12px;
+    -fx-text-fill: -color-text-tertiary;
+}
+
+.preview-empty {
+    -fx-alignment: center;
+    -fx-spacing: 8;
+    -fx-padding: 48 20 48 20;
+}
+
+.preview-footer {
+    -fx-padding: 12 24 16 24;
+    -fx-spacing: 10;
+    -fx-alignment: center-left;
+    -fx-border-color: -color-divider;
+    -fx-border-width: 1 0 0 0;
+}
+
+.preview-hint {
+    -fx-font-size: 12px;
+    -fx-text-fill: -color-text-tertiary;
+}
+
 /* ---------- log drawer (placeholder — wired in M7i) ---------- */
 
 .log-drawer-handle {

@@ -53,6 +53,7 @@ public class LibraryController {
   private final BackupService backupService;
   private final ManifestIndex manifestIndex;
   private final Clock clock;
+  private final MainController mainController;
 
   @FXML private VBox emptyState;
   @FXML private FlowPane cardGrid;
@@ -68,7 +69,8 @@ public class LibraryController {
       SyncService syncService,
       BackupService backupService,
       ManifestIndex manifestIndex,
-      Clock clock) {
+      Clock clock,
+      MainController mainController) {
     this.catalog = catalog;
     this.config = config;
     this.reachability = reachability;
@@ -76,6 +78,7 @@ public class LibraryController {
     this.backupService = backupService;
     this.manifestIndex = manifestIndex;
     this.clock = clock;
+    this.mainController = mainController;
   }
 
   @FXML
@@ -108,6 +111,7 @@ public class LibraryController {
     for (GameId id : gameIds) {
       GameCardView card = new GameCardView(id, displayName(id));
       card.update(CardStatus.LOADING, "");
+      card.setOnSyncNow(gameId -> mainController.openPreview(List.of(gameId)));
       cards.put(id, card);
       cardGrid.getChildren().add(card);
     }

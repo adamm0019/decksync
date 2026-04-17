@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.VBox?>
+<VBox xmlns="http://javafx.com/javafx/21"
+      xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="dev.decksync.gui.controller.PreviewController"
+      stylesheets="@../css/app.css"
+      styleClass="preview-sheet"
+      prefWidth="640.0"
+      prefHeight="560.0">
+
+    <VBox styleClass="preview-header">
+        <Label text="Preview sync" styleClass="preview-title"/>
+        <Label fx:id="summaryLabel" styleClass="preview-subtitle"/>
+    </VBox>
+
+    <ScrollPane fitToWidth="true" styleClass="plain-scroll" VBox.vgrow="ALWAYS">
+        <VBox fx:id="rowContainer" styleClass="preview-rows"/>
+    </ScrollPane>
+
+    <VBox styleClass="preview-empty" fx:id="emptyState">
+        <Label text="Nothing to sync" styleClass="empty-title"/>
+        <Label text="All configured games are already in sync." styleClass="empty-subtitle"/>
+    </VBox>
+
+    <HBox styleClass="preview-footer">
+        <Label fx:id="backupHint" text="Backups on · most recent 20 snapshots kept" styleClass="preview-hint"/>
+        <Region HBox.hgrow="ALWAYS"/>
+        <Button fx:id="cancelButton" text="Cancel" styleClass="button-ghost" onAction="#onCancel"/>
+        <Button fx:id="applyButton" text="Apply sync" styleClass="button-primary" onAction="#onApply"/>
+    </HBox>
+</VBox>

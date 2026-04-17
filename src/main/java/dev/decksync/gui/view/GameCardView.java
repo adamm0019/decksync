@@ -1,6 +1,8 @@
 package dev.decksync.gui.view;
 
 import dev.decksync.domain.GameId;
+import java.util.function.Consumer;
+import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Region;
@@ -21,7 +23,9 @@ public final class GameCardView extends VBox {
   private final Label statusLabel = new Label();
   private final Label timeLabel = new Label();
   private final HBox statusLine;
+  private final Button syncButton = new Button("Sync now");
   private CardStatus currentStatus = CardStatus.LOADING;
+  private Consumer<GameId> onSyncNow;
 
   public GameCardView(GameId gameId, String displayName) {
     this.gameId = gameId;
@@ -44,8 +48,22 @@ public final class GameCardView extends VBox {
 
     timeLabel.getStyleClass().add("card-time");
 
-    getChildren().addAll(art, title, statusLine, timeLabel);
+    syncButton.getStyleClass().addAll("button-ghost", "card-action");
+    syncButton.setOnAction(
+        e -> {
+          if (onSyncNow != null) {
+            onSyncNow.accept(gameId);
+          }
+        });
+    syncButton.setVisible(false);
+    syncButton.setManaged(false);
+
+    getChildren().addAll(art, title, statusLine, timeLabel, syncButton);
     applyStatusStyle();
+  }
+
+  public void setOnSyncNow(Consumer<GameId> handler) {
+    this.onSyncNow = handler;
   }
 
   public GameId gameId() {
@@ -62,6 +80,9 @@ public final class GameCardView extends VBox {
     statusLabel.setText(status.label());
     timeLabel.setText(timeText);
     applyStatusStyle();
+    boolean showSync = status == CardStatus.NEWER_PEER || status == CardStatus.CONFLICT;
+    syncButton.setVisible(showSync);
+    syncButton.setManaged(showSync);
   }
 
   private void applyStatusStyle() {

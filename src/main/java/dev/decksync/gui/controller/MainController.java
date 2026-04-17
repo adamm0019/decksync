@@ -1,10 +1,14 @@
 package dev.decksync.gui.controller;
 
+import dev.decksync.application.DeckSyncConfig;
+import dev.decksync.application.GameCatalog;
 import dev.decksync.application.PeerReachability;
 import dev.decksync.application.PeerStatus;
+import dev.decksync.domain.GameId;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.time.Duration;
+import java.util.ArrayList;
 import java.util.List;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
@@ -14,6 +18,7 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
+import javafx.stage.Window;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Component;
 
@@ -27,6 +32,8 @@ public class MainController {
 
   private final ApplicationContext context;
   private final PeerReachability reachability;
+  private final GameCatalog catalog;
+  private final DeckSyncConfig config;
 
   @FXML private StackPane destinationHost;
   @FXML private HBox peerPill;
@@ -35,9 +42,15 @@ public class MainController {
   @FXML private Button historyNavButton;
   @FXML private Button settingsNavButton;
 
-  public MainController(ApplicationContext context, PeerReachability reachability) {
+  public MainController(
+      ApplicationContext context,
+      PeerReachability reachability,
+      GameCatalog catalog,
+      DeckSyncConfig config) {
     this.context = context;
     this.reachability = reachability;
+    this.catalog = catalog;
+    this.config = config;
   }
 
   @FXML
@@ -84,7 +97,30 @@ public class MainController {
 
   @FXML
   void onSyncAll() {
-    // Wired in M7d. Kept here so the FXML reference doesn't break.
+    openPreview(resolveAllWatchedGames());
+  }
+
+  /**
+   * Open the preview sheet for the given games. Invoked from {@link LibraryController} when the
+   * per-card "Sync now" button fires.
+   */
+  public void openPreview(List<GameId> games) {
+    if (games.isEmpty()) {
+      return;
+    }
+    Window owner = peerPill.getScene().getWindow();
+    PreviewController.showModal(context, owner, games);
+  }
+
+  private List<GameId> resolveAllWatchedGames() {
+    List<GameId> configured = config.watchedGames();
+    List<GameId> resolved = new ArrayList<>();
+    if (configured.isEmpty()) {
+      resolved.addAll(catalog.resolveInstalled().keySet());
+    } else {
+      resolved.addAll(configured);
+    }
+    return resolved;
   }
 
   private void showDestination(String fxmlPath, Button activeNav) {
