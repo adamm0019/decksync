@@ -1,6 +1,7 @@
 package dev.decksync.config;
 
 import dev.decksync.application.BackupService;
+import dev.decksync.application.DeckSyncConfig;
 import dev.decksync.application.Environment;
 import dev.decksync.application.FileApplier;
 import dev.decksync.application.FileScanner;
@@ -9,10 +10,8 @@ import dev.decksync.application.PeerClient;
 import dev.decksync.application.SyncPlanner;
 import dev.decksync.application.SyncService;
 import dev.decksync.infrastructure.net.HttpPeerClient;
-import java.net.URI;
 import java.nio.file.Path;
 import java.time.Clock;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.client.RestClient;
@@ -20,8 +19,8 @@ import org.springframework.web.client.RestClient;
 /**
  * Wires the sync engine: the pure {@link SyncPlanner}, the filesystem adapters ({@link
  * BackupService}, {@link FileApplier}), the HTTP {@link PeerClient}, and the {@link SyncService}
- * that glues them together. Retention and peer URL come from Spring config so operators can tweak
- * them per-host without recompiling.
+ * that glues them together. Peer URL and retention come from the {@link DeckSyncConfig} bean —
+ * config.yml is the single source of truth, defaults only apply when the file is absent.
  */
 @Configuration
 public class SyncConfiguration {
@@ -45,9 +44,8 @@ public class SyncConfiguration {
   }
 
   @Bean
-  public PeerClient peerClient(
-      RestClient.Builder builder, @Value("${decksync.peer.url:http://localhost:47824}") URI peer) {
-    return HttpPeerClient.create(builder, peer);
+  public PeerClient peerClient(RestClient.Builder builder, DeckSyncConfig config) {
+    return HttpPeerClient.create(builder, config.peerUrl());
   }
 
   @Bean
@@ -58,7 +56,8 @@ public class SyncConfiguration {
       BackupService backupService,
       FileApplier fileApplier,
       GameCatalog catalog,
-      @Value("${decksync.sync.retention:20}") int retention) {
-    return new SyncService(peer, scanner, planner, backupService, fileApplier, catalog, retention);
+      DeckSyncConfig config) {
+    return new SyncService(
+        peer, scanner, planner, backupService, fileApplier, catalog, config.retention());
   }
 }

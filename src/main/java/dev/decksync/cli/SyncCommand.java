@@ -1,5 +1,6 @@
 package dev.decksync.cli;
 
+import dev.decksync.application.DeckSyncConfig;
 import dev.decksync.application.GameCatalog;
 import dev.decksync.application.GameIdParser;
 import dev.decksync.application.PeerClient;
@@ -37,6 +38,7 @@ public class SyncCommand implements Callable<Integer> {
   private final SyncService syncService;
   private final PeerClient peer;
   private final GameCatalog catalog;
+  private final DeckSyncConfig config;
   private final PrintStream out;
   private final PrintStream err;
 
@@ -50,19 +52,22 @@ public class SyncCommand implements Callable<Integer> {
   private boolean dryRun;
 
   @Autowired
-  public SyncCommand(SyncService syncService, PeerClient peer, GameCatalog catalog) {
-    this(syncService, peer, catalog, System.out, System.err);
+  public SyncCommand(
+      SyncService syncService, PeerClient peer, GameCatalog catalog, DeckSyncConfig config) {
+    this(syncService, peer, catalog, config, System.out, System.err);
   }
 
   SyncCommand(
       SyncService syncService,
       PeerClient peer,
       GameCatalog catalog,
+      DeckSyncConfig config,
       PrintStream out,
       PrintStream err) {
     this.syncService = syncService;
     this.peer = peer;
     this.catalog = catalog;
+    this.config = config;
     this.out = out;
     this.err = err;
   }
@@ -116,8 +121,11 @@ public class SyncCommand implements Callable<Integer> {
       return List.of(GameIdParser.parse(gameIdRaw));
     }
     Set<GameId> peerGames = new HashSet<>(peer.listGames());
+    Set<GameId> watched =
+        config.watchedGames().isEmpty() ? null : new HashSet<>(config.watchedGames());
     return catalog.resolveInstalled().keySet().stream()
         .filter(peerGames::contains)
+        .filter(g -> watched == null || watched.contains(g))
         .sorted(Comparator.comparing(SyncCommand::format))
         .toList();
   }
