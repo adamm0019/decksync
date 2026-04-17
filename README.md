@@ -37,11 +37,36 @@ Running either task on the wrong OS is a no-op with a warning rather than a hard
 
 ## Quickstart
 
-You need **two machines on the same LAN**. Pick one machine's LAN IP as the peer URL on the *other* machine and vice versa. Port `47824/tcp` is the default.
+You need **two machines on the same LAN**. On each one, install the MSI / AppImage and then run:
 
-### 1. Create `~/.decksync/config.yml` on each machine
+```bash
+decksync setup
+```
 
-On PC A (IP `192.168.1.10`):
+The wizard prompts for the peer's IP, picks games from the resolved catalog, writes `~/.decksync/config.yml`, and registers the firewall rule + autostart entry (scheduled task on Windows, systemd user service on Linux). Re-run with `--force` to reset the config; add `--skip-os-setup` to only write the file.
+
+On Windows the firewall rule needs UAC — run `decksync setup` from an elevated PowerShell so `netsh` doesn't fail. On the Steam Deck (desktop mode) no firewall action is needed unless you've turned `firewalld` on yourself.
+
+Then, on each machine:
+
+```bash
+decksync list-games          # per-game resolved save paths on this host
+decksync status              # peer reachability + last-sync time per game
+decksync sync --dry-run      # show what would change, apply nothing
+decksync sync                # do it
+```
+
+`decksync sync` always runs pull-only and hash-then-mtime last-writer-wins. Before overwriting a local file, the old version is copied to `~/.decksync/history/<gameId>/<timestamp>/`. The newest `retention` snapshots per game are kept and older ones pruned.
+
+### Manual fallback
+
+If you'd rather not let the CLI touch firewall or autostart, skip the wizard and set up the config + OS integrations by hand — see [Manual setup](#manual-setup) below.
+
+## Manual setup
+
+`decksync setup` automates everything below — this section is the fallback for when you'd rather not let the CLI run `netsh` / `schtasks` / `systemctl` for you, or when you need to wire things differently (e.g. a system-level scheduled task rather than a user logon task).
+
+Config file: hand-edit `~/.decksync/config.yml`:
 
 ```yaml
 peer:
@@ -53,53 +78,32 @@ games:
   - stardew-valley
 ```
 
-On PC B (IP `192.168.1.11`): same file, but `peer.url: http://192.168.1.10:47824`.
+All fields are optional. Missing file → defaults (`peerUrl=http://localhost:47824`, `port=47824`, `retention=20`, `games=[]`). Empty `games:` list means "sync everything both peers have installed".
 
-All fields are optional — `config.yml` can be absent and the defaults (`peerUrl=http://localhost:47824`, `port=47824`, `retention=20`, `games=[]`) will apply. If `games` is omitted, every game resolvable on *both* peers is synced.
+### Firewall
 
-### 2. Open the firewall
-
-**Windows 11** — from an elevated PowerShell:
+**Windows 11** (elevated PowerShell):
 
 ```powershell
 netsh advfirewall firewall add rule `
-  name="DeckSync" `
-  dir=in action=allow `
-  protocol=TCP localport=47824 `
-  profile=private
+  name="DeckSync" dir=in action=allow `
+  protocol=TCP localport=47824 profile=private
 ```
 
-Remove later with:
+Remove with `netsh advfirewall firewall delete rule name="DeckSync"`.
 
-```powershell
-netsh advfirewall firewall delete rule name="DeckSync"
-```
-
-**SteamOS / Linux** — SteamOS ships with no firewall enabled by default, so nothing needs to be done. If you have `firewalld` installed (e.g. Fedora, some self-managed Decks):
+**Linux** (only if `firewalld` is active — SteamOS has no firewall by default):
 
 ```bash
 sudo firewall-cmd --permanent --add-port=47824/tcp
 sudo firewall-cmd --reload
 ```
 
-### 3. Verify
-
-On each machine:
-
-```bash
-decksync list-games          # per-game resolved save paths on this host
-decksync status              # peer reachability + last-sync time per game
-decksync sync --dry-run      # show what would change, apply nothing
-decksync sync                # do it
-```
-
-`decksync sync` always runs pull-only and hash-then-mtime last-writer-wins. Before overwriting a local file, the old version is copied to `~/.decksync/history/<gameId>/<timestamp>/`. The newest `retention` snapshots per game are kept and older ones pruned.
-
-## Run the daemon
+### Autostart
 
 `decksync serve` is the long-running HTTP endpoint that exposes this machine's manifests and save files to the peer. The sync direction is opportunistic: you run `decksync sync` on the machine that wants to *pull* fresh state, and `decksync serve` on the machine that *has* it. Most setups run both on both machines.
 
-### Windows — scheduled task at login
+#### Windows — scheduled task at login
 
 Save as `decksync-serve.xml` and import with `schtasks /Create /TN DeckSync /XML decksync-serve.xml`:
 
@@ -138,7 +142,7 @@ Save as `decksync-serve.xml` and import with `schtasks /Create /TN DeckSync /XML
 
 Remove with `schtasks /Delete /TN DeckSync /F`.
 
-### SteamOS / Linux — systemd user service
+#### SteamOS / Linux — systemd user service
 
 Save as `~/.config/systemd/user/decksync.service`:
 
