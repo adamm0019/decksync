@@ -19,16 +19,31 @@ public class DeckSyncApplication {
     // don't pay the Tomcat startup cost on every one-shot command.
     app.setWebApplicationType(
         isServeInvocation(translated) ? WebApplicationType.SERVLET : WebApplicationType.NONE);
+    // The gui subcommand is long-running and wants mDNS discovery running so
+    // the setup wizard can populate its "Find peer" step, but it doesn't serve
+    // HTTP — only listens. Activate a dedicated profile so GuiDiscoveryConfiguration
+    // picks it up without piggybacking on WebApplicationType (which would boot Tomcat).
+    if (isGuiInvocation(translated)) {
+      app.setAdditionalProfiles("gui");
+    }
     app.setBannerMode(Banner.Mode.OFF);
     System.exit(SpringApplication.exit(app.run(translated)));
   }
 
   private static boolean isServeInvocation(String[] args) {
+    return firstSubcommand(args, "serve");
+  }
+
+  private static boolean isGuiInvocation(String[] args) {
+    return firstSubcommand(args, "gui");
+  }
+
+  private static boolean firstSubcommand(String[] args, String name) {
     for (String arg : args) {
       if (arg == null || arg.isEmpty() || arg.startsWith("-")) {
         continue;
       }
-      return "serve".equals(arg);
+      return name.equals(arg);
     }
     return false;
   }

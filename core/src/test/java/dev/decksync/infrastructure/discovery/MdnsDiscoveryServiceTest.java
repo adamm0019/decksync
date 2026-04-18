@@ -64,6 +64,23 @@ class MdnsDiscoveryServiceTest {
   }
 
   @Test
+  void start_whenAdvertiseDisabled_skipsRegisterServiceButStillListens() throws Exception {
+    JmDNS jmdns = mock(JmDNS.class);
+    MdnsDiscoveryService service =
+        serviceWithSweeper(
+            jmdns,
+            new DiscoveredPeers(),
+            Clock.systemUTC(),
+            mock(ScheduledExecutorService.class),
+            false);
+
+    service.start();
+
+    verify(jmdns, times(0)).registerService(any());
+    verify(jmdns).addServiceListener(eq(MdnsDiscoveryService.SERVICE_TYPE), any());
+  }
+
+  @Test
   void serviceResolved_registersRemotePeer() throws Exception {
     JmDNS jmdns = mock(JmDNS.class);
     DiscoveredPeers peers = new DiscoveredPeers();
@@ -212,6 +229,7 @@ class MdnsDiscoveryServiceTest {
             InetAddress.getLoopbackAddress(),
             47824,
             new DiscoveredPeers(),
+            true,
             MdnsDiscoveryService.DEFAULT_PEER_TTL,
             MdnsDiscoveryService.SWEEP_INTERVAL,
             Clock.systemUTC(),
@@ -222,7 +240,7 @@ class MdnsDiscoveryServiceTest {
 
     assertThatThrownBy(service::start)
         .isInstanceOf(IllegalStateException.class)
-        .hasMessageContaining("Failed to start mDNS advertisement");
+        .hasMessageContaining("Failed to start mDNS discovery");
   }
 
   @Test
@@ -263,7 +281,7 @@ class MdnsDiscoveryServiceTest {
 
     assertThatThrownBy(service::start)
         .isInstanceOf(IllegalStateException.class)
-        .hasMessageContaining("Failed to start mDNS advertisement");
+        .hasMessageContaining("Failed to start mDNS discovery");
 
     verify(jmdns).close();
   }
@@ -303,11 +321,21 @@ class MdnsDiscoveryServiceTest {
 
   private MdnsDiscoveryService serviceWithSweeper(
       JmDNS jmdns, DiscoveredPeers peers, Clock clock, ScheduledExecutorService sweeper) {
+    return serviceWithSweeper(jmdns, peers, clock, sweeper, true);
+  }
+
+  private MdnsDiscoveryService serviceWithSweeper(
+      JmDNS jmdns,
+      DiscoveredPeers peers,
+      Clock clock,
+      ScheduledExecutorService sweeper,
+      boolean advertise) {
     return new MdnsDiscoveryService(
         IDENTITY,
         InetAddress.getLoopbackAddress(),
         47824,
         peers,
+        advertise,
         MdnsDiscoveryService.DEFAULT_PEER_TTL,
         MdnsDiscoveryService.SWEEP_INTERVAL,
         clock,

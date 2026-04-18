@@ -63,6 +63,7 @@ public final class MdnsDiscoveryService implements DiscoveryService {
   private final InetAddress bindAddress;
   private final int port;
   private final DiscoveredPeers discoveredPeers;
+  private final boolean advertise;
   private final Duration peerTtl;
   private final Duration sweepInterval;
   private final Clock clock;
@@ -75,13 +76,29 @@ public final class MdnsDiscoveryService implements DiscoveryService {
   private boolean started;
   private boolean closed;
 
+  /** Convenience for the serve daemon: advertises <em>and</em> listens. */
   public MdnsDiscoveryService(
       PeerIdentity identity, InetAddress bindAddress, int port, DiscoveredPeers discoveredPeers) {
+    this(identity, bindAddress, port, discoveredPeers, true);
+  }
+
+  /**
+   * @param advertise {@code true} for the serve daemon (we both announce ourselves and listen for
+   *     other peers); {@code false} for the GUI wizard (we only listen, since the wizard process
+   *     isn't serving anything HTTP-shaped that peers would want to connect to).
+   */
+  public MdnsDiscoveryService(
+      PeerIdentity identity,
+      InetAddress bindAddress,
+      int port,
+      DiscoveredPeers discoveredPeers,
+      boolean advertise) {
     this(
         identity,
         bindAddress,
         port,
         discoveredPeers,
+        advertise,
         DEFAULT_PEER_TTL,
         SWEEP_INTERVAL,
         Clock.systemUTC(),
@@ -94,6 +111,7 @@ public final class MdnsDiscoveryService implements DiscoveryService {
       InetAddress bindAddress,
       int port,
       DiscoveredPeers discoveredPeers,
+      boolean advertise,
       Duration peerTtl,
       Duration sweepInterval,
       Clock clock,
@@ -130,6 +148,7 @@ public final class MdnsDiscoveryService implements DiscoveryService {
     this.bindAddress = bindAddress;
     this.port = port;
     this.discoveredPeers = discoveredPeers;
+    this.advertise = advertise;
     this.peerTtl = peerTtl;
     this.sweepInterval = sweepInterval;
     this.clock = clock;
@@ -147,12 +166,15 @@ public final class MdnsDiscoveryService implements DiscoveryService {
     }
     try {
       jmdns = jmDnsFactory.create(bindAddress);
-      registerSelf();
+      if (advertise) {
+        registerSelf();
+      }
       subscribe();
       startSweeper();
       started = true;
       log.info(
-          "mDNS advertising {} as '{}' on {}:{} (peerId={}, protocolVersion={})",
+          "mDNS {} {} as '{}' on {}:{} (peerId={}, protocolVersion={})",
+          advertise ? "advertising" : "listening for",
           SERVICE_TYPE,
           identity.peerName(),
           bindAddress.getHostAddress(),
@@ -161,7 +183,7 @@ public final class MdnsDiscoveryService implements DiscoveryService {
           identity.protocolVersion());
     } catch (IOException e) {
       closeQuietly();
-      throw new IllegalStateException("Failed to start mDNS advertisement", e);
+      throw new IllegalStateException("Failed to start mDNS discovery", e);
     }
   }
 
