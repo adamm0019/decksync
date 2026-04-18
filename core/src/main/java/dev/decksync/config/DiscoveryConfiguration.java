@@ -1,6 +1,7 @@
 package dev.decksync.config;
 
 import dev.decksync.application.DeckSyncConfig;
+import dev.decksync.application.DiscoveredPeers;
 import dev.decksync.application.DiscoveryService;
 import dev.decksync.application.Environment;
 import dev.decksync.application.PeerIdentity;
@@ -53,13 +54,20 @@ public class DiscoveryConfiguration {
     return new PeerIdentity(peerName, peerId, appVersion, PeerIdentity.CURRENT_PROTOCOL_VERSION);
   }
 
+  @Bean
+  public DiscoveredPeers discoveredPeers() {
+    return new DiscoveredPeers();
+  }
+
   @Bean(initMethod = "start")
   public DiscoveryService discoveryService(
       PeerIdentity peerIdentity,
       DeckSyncConfig deckSyncConfig,
+      DiscoveredPeers discoveredPeers,
       @Value("${server.address:0.0.0.0}") String bindAddressProperty) {
     InetAddress bindAddress = resolveBindAddress(bindAddressProperty);
-    return new MdnsDiscoveryService(peerIdentity, bindAddress, deckSyncConfig.port());
+    return new MdnsDiscoveryService(
+        peerIdentity, bindAddress, deckSyncConfig.port(), discoveredPeers);
   }
 
   private static String resolvePeerName() {
