@@ -6,3 +6,5 @@ plugins {
 }
 
 rootProject.name = "decksync"
+
+include(":core", ":gui", ":cli")
