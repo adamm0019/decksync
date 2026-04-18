@@ -1,5 +1,6 @@
 package dev.decksync.gui;
 
+import dev.decksync.gui.infrastructure.IconLoader;
 import dev.decksync.gui.log.GuiLogAppender;
 import java.io.IOException;
 import java.io.UncheckedIOException;
@@ -38,6 +39,7 @@ public class DeckSyncGuiApp extends Application {
       throw new UncheckedIOException("Failed to load main.fxml", e);
     }
     stage.setTitle("DeckSync");
+    stage.getIcons().addAll(IconLoader.loadAll());
     stage.setScene(new Scene(root));
     stage.show();
   }
