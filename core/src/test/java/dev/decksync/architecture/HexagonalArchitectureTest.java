@@ -8,12 +8,16 @@ import com.tngtech.archunit.junit.AnalyzeClasses;
 import com.tngtech.archunit.junit.ArchTest;
 import com.tngtech.archunit.lang.ArchRule;
 
+/**
+ * Enforces the hexagonal boundary for {@code :core}. After the M7a module split, {@code :gui} and
+ * {@code :cli} live in separate Gradle modules and aren't on this test's classpath — we no longer
+ * pretend to police them here. Both the access direction (who may import whom) and the domain's
+ * framework-freeness are asserted; an extra rule enforces the M7b tightening that application code
+ * only depends on the domain layer.
+ */
 @AnalyzeClasses(packages = "dev.decksync", importOptions = ImportOption.DoNotIncludeTests.class)
 class HexagonalArchitectureTest {
 
-  // Layers are declared `optionalLayer` so an empty package doesn't count as a
-  // violation — during early M2 commits, most layers contain only a
-  // package-info.java. The direction rules still apply once real classes land.
   @ArchTest
   static final ArchRule hexagonalLayers =
       layeredArchitecture()
@@ -26,24 +30,26 @@ class HexagonalArchitectureTest {
           .definedBy("dev.decksync.infrastructure..")
           .optionalLayer("web")
           .definedBy("dev.decksync.web..")
-          .optionalLayer("cli")
-          .definedBy("dev.decksync.cli..")
-          .optionalLayer("gui")
-          .definedBy("dev.decksync.gui..")
           .optionalLayer("config")
           .definedBy("dev.decksync.config..")
+          // Access direction — who may be imported by whom.
           .whereLayer("config")
           .mayNotBeAccessedByAnyLayer()
           .whereLayer("infrastructure")
           .mayOnlyBeAccessedByLayers("config")
           .whereLayer("web")
           .mayOnlyBeAccessedByLayers("config")
-          .whereLayer("cli")
-          .mayOnlyBeAccessedByLayers("config")
-          .whereLayer("gui")
-          .mayOnlyBeAccessedByLayers("cli", "config")
           .whereLayer("application")
-          .mayOnlyBeAccessedByLayers("infrastructure", "web", "cli", "gui", "config");
+          .mayOnlyBeAccessedByLayers("infrastructure", "web", "config")
+          // Outgoing edges — what each layer may depend on. Domain is the
+          // nucleus; application only leans inward onto domain. Infrastructure
+          // and web implement application ports, so they may reach domain and
+          // application. Config wires everything together and is allowed to
+          // touch any lower layer.
+          .whereLayer("domain")
+          .mayNotAccessAnyLayer()
+          .whereLayer("application")
+          .mayOnlyAccessLayers("domain");
 
   @ArchTest
   static final ArchRule domainIsFrameworkFree =
@@ -61,7 +67,5 @@ class HexagonalArchitectureTest {
               "dev.decksync.application..",
               "dev.decksync.infrastructure..",
               "dev.decksync.web..",
-              "dev.decksync.cli..",
-              "dev.decksync.gui..",
               "dev.decksync.config..");
 }
