@@ -10,7 +10,7 @@
 // Registering the task at the root keeps a single source of truth and lets
 // both subprojects depend on it without reaching across module boundaries.
 
-import dev.decksync.build.icons.GenerateIconsTask
+import dev.decksync.icons.GenerateIconsTask
 
 val generateIcons =
     tasks.register<GenerateIconsTask>("generateIcons") {
