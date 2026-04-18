@@ -34,6 +34,10 @@ dependencies {
 
 springBoot {
     mainClass = "dev.decksync.DeckSyncApplication"
+    // Emits META-INF/build-info.properties into the boot jar so
+    // DiscoveryConfiguration can read the real app version for the mDNS TXT
+    // record instead of a "dev" placeholder.
+    buildInfo()
 }
 
 // Pin jpackage + jlink to the Gradle Java 21 toolchain rather than whatever

@@ -17,6 +17,7 @@ dependencyManagement {
 
 val wiremockVersion = "3.9.1"
 val archunitVersion = "1.3.0"
+val jmdnsVersion = "3.5.12"
 
 // Dedicated source set for end-to-end / two-JVM tests — kept separate from
 // unit tests so `./gradlew core:test` stays fast and `./gradlew core:integrationTest`
@@ -39,6 +40,9 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter")
     implementation("org.springframework.boot:spring-boot-starter-web")
     implementation("org.yaml:snakeyaml")
+    // mDNS peer advertisement / discovery. Used only by the serve-profile
+    // DiscoveryConfiguration — one-shot CLI commands never register this bean.
+    implementation("org.jmdns:jmdns:$jmdnsVersion")
 
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testImplementation("org.wiremock:wiremock-standalone:$wiremockVersion")
