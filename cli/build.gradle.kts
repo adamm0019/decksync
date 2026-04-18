@@ -59,12 +59,18 @@ tasks.register<Exec>("packageMsi") {
     description = "Builds a Windows MSI installer with a bundled JRE via jpackage. Requires WiX 3.x on PATH."
     group = "distribution"
     dependsOn(tasks.bootJar)
+    // packaging/decksync.ico is written by the root :generateIcons task from
+    // the canonical SVG. Depend on it so a clean checkout that edits the SVG
+    // gets a fresh ICO threaded through jpackage without a separate step.
+    dependsOn(rootProject.tasks.named("generateIcons"))
 
     val bootJarFile = tasks.bootJar.flatMap { it.archiveFile }
     val inputDir = layout.buildDirectory.dir("jpackage-input")
     val outputDir = layout.buildDirectory.dir("distributions")
+    val icoFile = rootProject.layout.projectDirectory.file("packaging/decksync.ico")
 
     inputs.file(bootJarFile)
+    inputs.file(icoFile)
     outputs.dir(outputDir)
 
     onlyIf {
@@ -95,6 +101,10 @@ tasks.register<Exec>("packageMsi") {
             "--input", inDir.absolutePath,
             "--main-jar", jar.name,
             "--dest", outputDir.get().asFile.absolutePath,
+            // Multi-resolution ICO — jpackage stamps this onto the installer,
+            // the Start Menu shortcut, and the executable resource, replacing
+            // the default Java coffee-cup icon.
+            "--icon", icoFile.asFile.absolutePath,
             "--win-console",
             "--win-menu",
             "--win-menu-group", "DeckSync",
@@ -117,12 +127,18 @@ tasks.register("packageAppImage") {
     description = "Builds a Linux AppImage with a bundled JRE via appimagetool. Requires appimagetool on PATH."
     group = "distribution"
     dependsOn(tasks.bootJar)
+    // packaging/decksync.png is the 1024×1024 rasterisation of the canonical
+    // SVG — appimagetool embeds it as the AppImage's thumbnail and the .desktop
+    // file references it as the launcher icon.
+    dependsOn(rootProject.tasks.named("generateIcons"))
 
     val bootJarFile = tasks.bootJar.flatMap { it.archiveFile }
     val stagingDir = layout.buildDirectory.dir("appimage")
     val outputDir = layout.buildDirectory.dir("distributions")
+    val pngFile = rootProject.layout.projectDirectory.file("packaging/decksync.png")
 
     inputs.file(bootJarFile)
+    inputs.file(pngFile)
     outputs.dir(outputDir)
 
     onlyIf {
@@ -195,15 +211,10 @@ tasks.register("packageAppImage") {
             """.trimIndent() + "\n",
         )
 
-        // Minimal SVG icon so appimagetool doesn't warn. Placeholder until we
-        // ship real branding — the colour is Steam-ish blue, the shape is a
-        // square.
-        appDir.resolve("decksync.svg").writeText(
-            "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 16 16\">" +
-                "<rect width=\"16\" height=\"16\" fill=\"#1b2838\"/>" +
-                "<rect x=\"3\" y=\"3\" width=\"10\" height=\"10\" fill=\"#66c0f4\"/>" +
-                "</svg>\n",
-        )
+        // Real branding now — the canonical SVG rendered to a 1024×1024 PNG by
+        // :generateIcons. appimagetool picks this up as the launcher thumbnail
+        // because Icon=decksync in the .desktop entry matches the basename.
+        pngFile.asFile.copyTo(appDir.resolve("decksync.png"), overwrite = true)
 
         outputDir.get().asFile.mkdirs()
         val outFile = outputDir.get().asFile.resolve("DeckSync-$appVersion-x86_64.AppImage")
