@@ -2,6 +2,8 @@ package dev.decksync.gui.controller;
 
 import dev.decksync.application.ConfigInitializer;
 import dev.decksync.application.DeckSyncConfig;
+import dev.decksync.application.DiscoveredPeer;
+import dev.decksync.application.DiscoveredPeers;
 import dev.decksync.application.Environment;
 import dev.decksync.application.GameCatalog;
 import dev.decksync.application.ManifestEntry;
@@ -20,6 +22,8 @@ import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import javafx.animation.KeyFrame;
+import javafx.animation.Timeline;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -34,33 +38,50 @@ import javafx.scene.layout.VBox;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.Window;
+import javafx.util.Duration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Component;
 
 /**
- * Five-step first-run wizard: welcome → peer URL → games → behaviour → done. Writes {@code
- * ~/.decksync/config.yml} through the same {@link ConfigInitializer} the CLI uses, so both paths
- * produce byte-identical files. The running Spring context isn't rebuilt — on finish, the wizard
- * shows a "restart to apply" note because the {@link DeckSyncConfig} bean was read at startup.
+ * Six-step first-run wizard: welcome → find peer → peer URL → games → behaviour → done. Writes
+ * {@code ~/.decksync/config.yml} through the same {@link ConfigInitializer} the CLI uses, so both
+ * paths produce byte-identical files. The running Spring context isn't rebuilt — on finish, the
+ * wizard shows a "restart to apply" note because the {@link DeckSyncConfig} bean was read at
+ * startup.
+ *
+ * <p>The "find peer" step polls {@link DiscoveredPeers} — populated by {@code
+ * GuiDiscoveryConfiguration}'s listen-only mDNS subscription — and lets the user pick a peer to
+ * auto-fill the URL on the next step. If the registry is absent (e.g. non-gui Spring context) or
+ * empty, the user falls through to the URL step and types an address by hand.
  */
 @Component
 public class FirstRunController {
 
   private static final Logger log = LoggerFactory.getLogger(FirstRunController.class);
 
+  private static final int FIND_PEER_STEP = 1;
+  private static final int PEER_URL_STEP = 2;
+  private static final Duration PEER_REFRESH_INTERVAL = Duration.seconds(2);
+
   private final GameCatalog catalog;
   private final Environment env;
   private final ManifestIndex manifestIndex;
+  private final ObjectProvider<DiscoveredPeers> discoveredPeersProvider;
 
   @FXML private Label stepIndicatorLabel;
   @FXML private Label stepTitleLabel;
   @FXML private VBox welcomeStep;
+  @FXML private VBox findPeerStep;
   @FXML private VBox peerStep;
   @FXML private VBox gamesStep;
   @FXML private VBox behaviourStep;
   @FXML private VBox doneStep;
+  @FXML private Label findPeerLead;
+  @FXML private Label findPeerHint;
+  @FXML private VBox discoveredPeersBox;
   @FXML private TextField peerUrlField;
   @FXML private Label peerErrorLabel;
   @FXML private Label gamesLead;
@@ -74,20 +95,27 @@ public class FirstRunController {
   @FXML private Button skipButton;
 
   private final List<VBox> steps = new ArrayList<>();
-  private final List<String> titles = List.of("Welcome", "Peer", "Games", "Behaviour", "Done");
+  private final List<String> titles =
+      List.of("Welcome", "Find peer", "Peer", "Games", "Behaviour", "Done");
   private final Map<CheckBox, GameId> gameChecks = new LinkedHashMap<>();
+  private Timeline peerRefreshTimer;
   private Stage stage;
   private int currentStep;
 
-  public FirstRunController(GameCatalog catalog, Environment env, ManifestIndex manifestIndex) {
+  public FirstRunController(
+      GameCatalog catalog,
+      Environment env,
+      ManifestIndex manifestIndex,
+      ObjectProvider<DiscoveredPeers> discoveredPeersProvider) {
     this.catalog = catalog;
     this.env = env;
     this.manifestIndex = manifestIndex;
+    this.discoveredPeersProvider = discoveredPeersProvider;
   }
 
   @FXML
   void initialize() {
-    steps.addAll(List.of(welcomeStep, peerStep, gamesStep, behaviourStep, doneStep));
+    steps.addAll(List.of(welcomeStep, findPeerStep, peerStep, gamesStep, behaviourStep, doneStep));
     retentionSpinner.setValueFactory(
         new SpinnerValueFactory.IntegerSpinnerValueFactory(
             1, 200, DeckSyncConfig.DEFAULT_RETENTION));
@@ -96,6 +124,8 @@ public class FirstRunController {
             1024, 65535, DeckSyncConfig.DEFAULT_PORT));
     peerErrorLabel.setVisible(false);
     peerErrorLabel.setManaged(false);
+    findPeerHint.setVisible(false);
+    findPeerHint.setManaged(false);
     populateGames();
     syncAllCheck
         .selectedProperty()
@@ -154,8 +184,15 @@ public class FirstRunController {
       nextButton.setText("Close");
     } else if (index == steps.size() - 2) {
       nextButton.setText("Finish");
+    } else if (index == FIND_PEER_STEP) {
+      nextButton.setText("Pair manually");
     } else {
       nextButton.setText("Next");
+    }
+    if (index == FIND_PEER_STEP) {
+      startPeerRefresh();
+    } else {
+      stopPeerRefresh();
     }
   }
 
@@ -168,7 +205,7 @@ public class FirstRunController {
 
   @FXML
   void onNext() {
-    if (currentStep == 1 && !validatePeer()) {
+    if (currentStep == PEER_URL_STEP && !validatePeer()) {
       return;
     }
     if (currentStep == steps.size() - 2) {
@@ -232,7 +269,7 @@ public class FirstRunController {
       config = new DeckSyncConfig(peerUrl, games, port, retention);
     } catch (IllegalArgumentException e) {
       showPeerError(e.getMessage());
-      showStep(1);
+      showStep(PEER_URL_STEP);
       return false;
     }
     Path configFile = env.home().resolve(".decksync/config.yml");
@@ -279,7 +316,85 @@ public class FirstRunController {
     return picked;
   }
 
+  private void startPeerRefresh() {
+    DiscoveredPeers peers = discoveredPeersProvider.getIfAvailable();
+    if (peers == null) {
+      // Non-gui Spring context (tests, or one-shot commands that somehow reach
+      // the wizard). Skip the live list but still let the user pair manually.
+      findPeerLead.setText(
+          "Peer discovery isn't running in this process — click Pair manually to enter a URL.");
+      discoveredPeersBox.getChildren().clear();
+      return;
+    }
+    refreshDiscoveredPeers(peers);
+    if (peerRefreshTimer != null) {
+      peerRefreshTimer.stop();
+    }
+    peerRefreshTimer =
+        new Timeline(new KeyFrame(PEER_REFRESH_INTERVAL, e -> refreshDiscoveredPeers(peers)));
+    peerRefreshTimer.setCycleCount(Timeline.INDEFINITE);
+    peerRefreshTimer.play();
+  }
+
+  private void stopPeerRefresh() {
+    if (peerRefreshTimer != null) {
+      peerRefreshTimer.stop();
+      peerRefreshTimer = null;
+    }
+  }
+
+  private void refreshDiscoveredPeers(DiscoveredPeers peers) {
+    List<DiscoveredPeer> snapshot =
+        peers.snapshot().stream()
+            .sorted(
+                Comparator.comparing(p -> p.identity().peerName(), String.CASE_INSENSITIVE_ORDER))
+            .toList();
+    discoveredPeersBox.getChildren().clear();
+    if (snapshot.isEmpty()) {
+      findPeerLead.setText("Looking for DeckSync peers on this LAN…");
+      findPeerHint.setText(
+          "Nothing yet. Make sure decksync serve is running on the other machine — or click"
+              + " Pair manually to enter a URL.");
+      findPeerHint.setVisible(true);
+      findPeerHint.setManaged(true);
+      return;
+    }
+    findPeerLead.setText(
+        "Found "
+            + snapshot.size()
+            + " peer"
+            + (snapshot.size() == 1 ? "" : "s")
+            + " on the LAN. Click one to pair.");
+    findPeerHint.setVisible(false);
+    findPeerHint.setManaged(false);
+    for (DiscoveredPeer peer : snapshot) {
+      discoveredPeersBox.getChildren().add(buildPeerRow(peer));
+    }
+  }
+
+  private Button buildPeerRow(DiscoveredPeer peer) {
+    String name = peer.identity().peerName();
+    String endpoint = peer.endpoint().getHostString() + ":" + peer.endpoint().getPort();
+    Button row = new Button(name + "  ·  " + endpoint);
+    row.getStyleClass().add("wizard-peer-row");
+    row.setMaxWidth(Double.MAX_VALUE);
+    row.setOnAction(e -> selectPeer(peer));
+    return row;
+  }
+
+  private void selectPeer(DiscoveredPeer peer) {
+    String url = "http://" + peer.endpoint().getHostString() + ":" + peer.endpoint().getPort();
+    peerUrlField.setText(url);
+    log.info(
+        "first-run wizard: pre-filled peer URL {} from discovered peer {} (peerId={})",
+        url,
+        peer.identity().peerName(),
+        peer.identity().peerId());
+    showStep(PEER_URL_STEP);
+  }
+
   private void closeStage() {
+    stopPeerRefresh();
     if (stage != null) {
       stage.close();
     }

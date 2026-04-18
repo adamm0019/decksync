@@ -748,6 +748,24 @@
     -fx-font-size: 13px;
 }
 
+.wizard-peer-row {
+    -fx-background-color: -color-bg-card;
+    -fx-border-color: -color-divider;
+    -fx-border-width: 1;
+    -fx-border-radius: 6;
+    -fx-background-radius: 6;
+    -fx-padding: 10 14;
+    -fx-text-fill: -color-text-primary;
+    -fx-alignment: center-left;
+    -fx-font-size: 13px;
+    -fx-cursor: hand;
+}
+
+.wizard-peer-row:hover {
+    -fx-border-color: -color-accent;
+    -fx-background-color: -color-bg-elevated;
+}
+
 .wizard-footer {
     -fx-padding: 12 24 16 24;
     -fx-spacing: 8;

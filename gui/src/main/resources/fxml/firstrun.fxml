@@ -32,6 +32,15 @@
             <Label text="This wizard writes ~/.decksync/config.yml with your peer URL, games to sync, and backup settings." styleClass="wizard-body"/>
         </VBox>
 
+        <VBox fx:id="findPeerStep" styleClass="wizard-step" visible="false" managed="false">
+            <Label text="Find a peer on your network" styleClass="wizard-title"/>
+            <Label fx:id="findPeerLead" text="Looking for DeckSync peers on this LAN…" styleClass="wizard-body"/>
+            <ScrollPane fitToWidth="true" styleClass="plain-scroll" VBox.vgrow="ALWAYS">
+                <VBox fx:id="discoveredPeersBox" styleClass="wizard-games"/>
+            </ScrollPane>
+            <Label fx:id="findPeerHint" styleClass="wizard-hint"/>
+        </VBox>
+
         <VBox fx:id="peerStep" styleClass="wizard-step" visible="false" managed="false">
             <Label text="Where's the other machine?" styleClass="wizard-title"/>
             <Label text="DeckSync syncs with one peer over HTTP. Enter its URL or LAN IP — port defaults to 47824." styleClass="wizard-body"/>
