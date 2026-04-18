@@ -7,10 +7,12 @@ import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -65,10 +67,27 @@ public final class DefaultGameCatalog implements GameCatalog {
   @Override
   public Map<GameId, AbsolutePath> resolveInstalled() {
     Map<GameId, AbsolutePath> out = new LinkedHashMap<>();
+    Set<GameId> seen = new HashSet<>();
     for (SteamLibrary library : libraryLocator.locate()) {
       for (Long appId : library.appIds()) {
-        resolveGame(library, appId).ifPresent(path -> out.put(new GameId.SteamAppId(appId), path));
+        GameId id = new GameId.SteamAppId(appId);
+        seen.add(id);
+        resolveGame(library, appId).ifPresent(path -> out.put(id, path));
       }
+    }
+    // Overrides may target games Steam doesn't know about on this machine — e.g. a peer-only
+    // game, a non-Steam build, or a game relocated outside the Steam libraries. Treat the
+    // override path as authoritative in that case; the catalog's job is to say where saves live,
+    // not to second-guess the user's explicit direction.
+    for (Map.Entry<GameId, PlatformOverride> entry : overrides.byGame().entrySet()) {
+      GameId id = entry.getKey();
+      if (seen.contains(id)) {
+        continue;
+      }
+      entry
+          .getValue()
+          .forPlatform(platform)
+          .ifPresent(raw -> parseOverride(id, raw).ifPresent(p -> out.put(id, p)));
     }
     return Collections.unmodifiableMap(out);
   }

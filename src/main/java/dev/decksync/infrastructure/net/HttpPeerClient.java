@@ -76,10 +76,10 @@ public final class HttpPeerClient implements PeerClient {
                           .build(id))
               .retrieve()
               .body(byte[].class);
-      if (body == null) {
-        throw new PeerException("Peer returned empty body for " + id + "!" + path.path());
-      }
-      return body;
+      // Spring returns null for HTTP 200 with a zero-byte body. A 0-byte file is legitimate —
+      // Skyrim ships SkyrimCustom.ini empty by default — so normalise to an empty array instead
+      // of failing the whole sync.
+      return body == null ? new byte[0] : body;
     } catch (HttpClientErrorException.NotFound e) {
       throw new PeerFileNotFoundException("Peer has no file " + path.path() + " for game " + id);
     } catch (RestClientResponseException e) {
