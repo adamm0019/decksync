@@ -17,7 +17,7 @@ Game-aware: understands that "Elden Ring save" is the same logical entity despit
 - **Picocli** for CLI
 - **JUnit 5 + AssertJ + WireMock** for tests
 - **SLF4J + Logback** for logging
-- **JavaFX 21 + FXML + Scene Builder** — GUI, Phase 2 onwards
+- **JavaFX 21 + FXML + Scene Builder** — GUI (dashboard, preview, history, settings, first-run wizard, log drawer)
 - **jpackage** (Windows MSI) + **appimagetool** (Linux AppImage) — packaging
 
 Keep the dependency list small and boring. Do not add new libraries without explicit discussion.
@@ -39,6 +39,9 @@ Keep the dependency list small and boring. Do not add new libraries without expl
 CLI (after install):
 
 ```bash
+decksync setup               # interactive first-run: writes ~/.decksync/config.yml
+decksync serve               # start the HTTP daemon on port 47824
+decksync gui                 # launch the JavaFX dashboard (client-only, no embedded server)
 decksync list-games          # resolved save paths per configured game (per platform)
 decksync scan <gameId>       # generate and print local manifest
 decksync sync [--game <id>] [--dry-run]
@@ -53,9 +56,10 @@ Hexagonal / ports-and-adapters. Strict dependency rule: `domain` imports nothing
 dev.decksync
 ├── domain           // pure model: records, sealed types, no frameworks
 ├── application      // use cases, orchestration, port interfaces
-├── infrastructure   // adapters: filesystem, Ludusavi parser, HTTP client, Steam locators
+├── infrastructure   // adapters: filesystem, Ludusavi parser, HTTP client, Steam locators, art fetch
 ├── web              // Spring MVC controllers, DTOs
 ├── cli              // Picocli commands
+├── gui              // JavaFX controllers, FXML, log capture
 └── config           // Spring @Configuration classes
 ```
 
@@ -95,7 +99,7 @@ dev.decksync
     windows: 'D:\Saves\EldenRing'
     linux:   '/home/deck/custom/eldenring'
   ```
-- `GameCatalog.resolveInstalled()` returns `Map<GameId, AbsolutePath>` for games resolvable on this machine.
+- `GameCatalog.resolveInstalled()` returns `Map<GameId, AbsolutePath>` for games resolvable on this machine. It iterates both Steam-discovered appids **and** override-only games — an override for a game the local Steam doesn't know about is authoritative (cross-peer libraries rarely overlap 1:1, and the override file is explicit user direction).
 
 ## Coding conventions
 
@@ -137,11 +141,19 @@ dev.decksync
 
 ## Current phase
 
-See [`docs/phase-1-plan.md`](docs/phase-1-plan.md).
+Phase 1 is **complete**. End-to-end Windows ↔ SteamOS sync verified on 2026-04-18 against a real Skyrim SE save set (94 files). Phase 2 plan is in [`docs/phase-2-plan.md`](docs/phase-2-plan.md); Phase 1 plan retained in [`docs/phase-1-plan.md`](docs/phase-1-plan.md) for reference.
 
-**In scope for Phase 1:** CLI + engine, HTTP (no TLS), pull-based sync, versioned backups, Ludusavi-driven path resolution, periodic poll, **cross-platform Windows + SteamOS/Linux**, Proton prefix support, MSI + AppImage packaging.
+**Shipped in Phase 1:**
+- CLI (`setup`, `serve`, `gui`, `list-games`, `scan`, `sync`, `status`)
+- HTTP sync engine (no TLS), pull-based sync, last-writer-wins, versioned backups, hash cache
+- Ludusavi-driven path resolution on Windows + SteamOS/Linux, Proton prefix cross-play
+- Per-platform `overrides.yml` (authoritative — used for override-only games too)
+- MSI + AppImage packaging
+- **JavaFX GUI**: dashboard, per-game cards with Steam header art, sync preview sheet, history timeline scrubber with rollback, settings, 5-step first-run wizard, expandable log drawer with in-memory appender, keyboard accelerators (Ctrl+1/2/3/L)
 
-**Out of scope for Phase 1:** JavaFX GUI, mDNS discovery, TLS/auth, filesystem watcher, Steam process integration, deletes, conflict resolution beyond last-writer-wins, macOS, native-Linux-build ↔ native-Windows-build save translation.
+**Still Phase-1-deferred / picked up in Phase 2:** mDNS discovery, TLS + pairing, filesystem watcher (replaces periodic poll), deletes with tombstones, conflict resolution UI, autostart install (wizard toggle is currently informational), Gradle module split.
+
+**Out of scope beyond Phase 2:** macOS, save-format introspection, Steam process lock, N-way sync (>2 peers), internet/Tailscale reachability, native-Linux-build ↔ native-Windows-build save translation.
 
 ## Runtime layout
 
