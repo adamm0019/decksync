@@ -1,0 +1,6 @@
+<svg viewBox="0 0 260 64" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="DeckSync">
+  <title>DeckSync</title>
+  <rect x="9" y="9" width="32" height="32" rx="7" ry="7" fill="none" stroke="#5B8DEF" stroke-width="3"/>
+  <rect x="23" y="23" width="32" height="32" rx="7" ry="7" fill="#5B8DEF"/>
+  <text x="82" y="41" font-family="Inter, 'Segoe UI Variable', system-ui, -apple-system, sans-serif" font-size="24" font-weight="600" fill="#E8ECF2" letter-spacing="-0.5">DeckSync</text>
+</svg>

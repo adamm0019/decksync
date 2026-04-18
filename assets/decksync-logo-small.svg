@@ -1,0 +1,14 @@
+<svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="DeckSync">
+  <title>DeckSync</title>
+  <!--
+    Favicon-optimised variant. The canonical decksync-logo.svg uses a 3-unit
+    stroke on the back square, which goes subpixel at 16/24/32 px and
+    anti-aliases into a grey smudge. This variant thickens the stroke to 8
+    (2 px at 16 px output) and nudges the back square inward so the heavier
+    outline still reads as the same shape as the main mark. Used only for
+    small icon sizes — the 48 px and larger renders come from the canonical
+    SVG so the taskbar / Start Menu thumbnail keeps its refined proportions.
+  -->
+  <rect x="8" y="8" width="28" height="28" rx="6" ry="6" fill="none" stroke="#5B8DEF" stroke-width="8"/>
+  <rect x="24" y="24" width="32" height="32" rx="6" ry="6" fill="#5B8DEF"/>
+</svg>
